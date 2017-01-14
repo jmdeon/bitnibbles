@@ -19,9 +19,9 @@ clearloop:
 
 hold:
     inc a
-    ld bc,$1fff         ; max waiting time
+    ld bc,$1fff         ; max waiting time. Why?
 hold_loop:
-    dec bc
+    dec bc              ; Need to use bc? Use another register?
     ld a,b
     or c
     jr nz, hold_loop
@@ -34,12 +34,12 @@ hold_loop:
     
 horiz_line:
     ld (hl), 28         ; Color
-    push bc             ; save our b counter
-    call hold
-    pop bc
-    inc hl
-    dec b
-    jp nz, horiz_line
+    push bc             ; Save our b counter
+    call hold           ; Call hold to make drawing appearance
+    pop bc              ; Retrieve b
+    inc hl              ; Move to the right
+    dec b               ; Decrement counter
+    jp nz, horiz_line   ; Loop until counter is 0
     ret
 
 vertical_line:
@@ -47,8 +47,7 @@ vertical_line:
     push bc             ; save our b counter
     call hold
     pop bc
-    ;ld (hl), 0
-    ld de, 32
+    ld de, 32           ; Move downward
     add hl, de
     dec b
     jp nz, vertical_line
@@ -59,8 +58,7 @@ diag_right_line:
     push bc             ; save our b counter
     call hold
     pop bc
-    ;ld (hl), 0
-    ld de, 33
+    ld de, 33           ; Move down and to the right
     add hl, de
     dec b
     jp nz, diag_right_line
@@ -71,8 +69,7 @@ diag_left_line:
     push bc             ; save our b counter
     call hold
     pop bc
-    ;ld (hl), 0
-    ld de, 31
+    ld de, 31           ; Move down and to the left
     add hl, de
     dec b
     jp nz, diag_left_line
