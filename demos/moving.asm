@@ -13,8 +13,7 @@ clearloop:
     inc hl
     dec b
     jp nz, clearloop
-    jp start
-
+    call start
 
 
 hold:
@@ -26,8 +25,6 @@ hold_loop:
     or c
     jr nz, hold_loop
     ret
-    
-    
     
                         ; horiz_line draws to the right while
                         ; all others draw downward
@@ -77,6 +74,7 @@ diag_left_line:
 
                         ; 22528 or hex 0x5800 is the start of the screen, goes until 
                         ; decimal 23296
+    
     
 start:
                         ; draw H-left
@@ -162,3 +160,5 @@ start:
     ld hl, 22621
     ld b,8
     call vertical_line
+    
+    ret
