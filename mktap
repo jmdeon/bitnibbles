@@ -3,10 +3,9 @@
 #Help Menu
 if [ $# -eq 0 ] || [[ $* == *-h* ]]
   then
-    echo "Useage: ./ mktap file.asm [options]"
+    echo "Useage: ./mktap file.asm [output name]"
     echo ""
     echo "Options:"
-    echo "  -o   output file"
     echo "  -h   help"
     echo ""
     exit
