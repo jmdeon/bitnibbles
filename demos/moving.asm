@@ -174,6 +174,45 @@ dec b
 jp nz, O0loop
 
 
+;draw O-low
+ld hl, 22841
+ld b, 4
+O1loop:
+ld (hl), 28
+push bc ; save our b counter
+call wait
+pop bc
+inc hl
+dec b
+jp nz, O1loop
+
+;draw O-high
+ld hl, 22617
+ld b, 4
+O2loop:
+ld (hl), 28
+push bc ; save our b counter
+call wait
+pop bc
+inc hl
+dec b
+jp nz, O2loop
+
+
+;draw O-stem 2
+ld hl, 22621
+ld b,8
+O3loop:
+ld (hl),28
+push bc
+call wait
+pop bc
+ld de, 32
+add hl, de
+dec b
+jp nz, O3loop
+
+
 wait:
        inc a
        ld bc,$1fff ;max waiting time
