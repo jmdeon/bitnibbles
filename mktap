@@ -1,8 +1,8 @@
 #!/bin/bash
 if [ $# -eq 2 ] && [ -e $1 ]
   then 
-    z80asm $1 -o $2
-    bin2tap -b $2 -o $2.tap
+    z80asm $1 -o $2.bin
+    bin2tap -b $2.bin -o $2.tap
 else
   echo "wrong number of args or asm file does not exist."
 fi
