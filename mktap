@@ -1,9 +1,44 @@
 #!/bin/bash
-if [ $# -eq 2 ] && [ -e $1 ]
-  then 
-    z80asm $1 -o $2.bin
-    bin2tap -b $2.bin -o $2.tap
+
+#Help Menu
+if [ $# -eq 0 ] || [[ $* == *-h* ]]
+  then
+    echo "Useage: ./ mktap file.asm [options]"
+    echo ""
+    echo "Options:"
+    echo "  -o   output file"
+    echo "  -h   help"
+    echo ""
+    exit
+fi
+
+#Check if input exists
+if [ ! -e $1 ]
+  then
+    echo "Error: input asm file does not exist"
+    exit
+fi
+
+#Strip the file of its extension to ensure clean output name
+FILENAME=""
+if [ $# -eq 1 ] 
+  then
+    FILENAME=${1%.*}
+elif [ $# -eq 2 ]
+  then
+    FILENAME=${2%.*}
 else
-  echo "wrong number of args or asm file does not exist."
+  echo "Error: too many args"
+  exit
+fi
+
+#Compile the z80 code
+z80asm $1 -o $FILENAME.bin
+
+#If successfully compiled, create the output and clean up
+if [ -e $FILENAME.bin ]
+  then
+    bin2tap -b $FILENAME.bin -o $FILENAME.tap
+    rm $FILENAME.bin
 fi
 
