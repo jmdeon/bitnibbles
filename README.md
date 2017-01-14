@@ -1,3 +1,6 @@
 # bitnibbles
+CSE 190 
+https://cseweb.ucsd.edu/~hovav/cse0175-wi17/
 
-Stevo was here
+
+Joseph Deon, Brandon Powers, Stephen Gilardi
