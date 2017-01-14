@@ -1,20 +1,25 @@
-    org 32768
+; Hello world program with drawing
+; Maybe include more information?
 
-    ld hl, 22560 ;draw black over the bytes message
+
+    org 32768           ; Why 32768? Could it be another location?
+
+    
+                        ; Do we need this?
+    ld hl, 22560        ; draw black over the bytes message
     ld b, 13
-clearloop:
+clearloop:         
     ld (hl), 0
     inc hl
     dec b
     jp nz, clearloop
     jp start
 
-    ;22528 or hex 0x5800 is the start of the screen, goes until 
-    ;decimal 23296
+
 
 hold:
     inc a
-    ld bc,$1fff ;max waiting time
+    ld bc,$1fff         ; max waiting time
 hold_loop:
     dec bc
     ld a,b
@@ -24,114 +29,139 @@ hold_loop:
     
     
     
-horiz_loop:
-    ld (hl), 28
-    push bc ; save our b counter
+                        ; horiz_line draws to the right while
+                        ; all others draw downward
+    
+horiz_line:
+    ld (hl), 28         ; Color
+    push bc             ; save our b counter
     call hold
     pop bc
     inc hl
     dec b
-    jp nz, horiz_loop
+    jp nz, horiz_line
     ret
 
-
-
-
-vertical_loop:
+vertical_line:
     ld (hl), 28
-    push bc ; save our b counter
+    push bc             ; save our b counter
     call hold
     pop bc
     ;ld (hl), 0
     ld de, 32
     add hl, de
     dec b
-    jp nz, vertical_loop
+    jp nz, vertical_line
+    ret
+    
+diag_right_line:
+    ld (hl), 28
+    push bc             ; save our b counter
+    call hold
+    pop bc
+    ;ld (hl), 0
+    ld de, 33
+    add hl, de
+    dec b
+    jp nz, diag_right_line
+    ret
+    
+diag_left_line:
+    ld (hl), 28
+    push bc             ; save our b counter
+    call hold
+    pop bc
+    ;ld (hl), 0
+    ld de, 31
+    add hl, de
+    dec b
+    jp nz, diag_left_line
     ret
 
-
+                        ; 22528 or hex 0x5800 is the start of the screen, goes until 
+                        ; decimal 23296
     
-    ;draw H-left
 start:
-    ld hl, 22592
-    ld b,8
-    call vertical_loop
+                        ; draw H-left
+    ld hl, 22592        ; Sets starting position
+    ld b,8              ; Distance to travel
+    call vertical_line
     
-    ;draw H-right
+                        ; draw H-right
     ld hl, 22596
     ld b,8
-    call vertical_loop
+    call vertical_line
     
     
-    ;draw H-mid
+                        ; draw H-mid
     ld hl, 22688
     ld b, 4
-    call horiz_loop
+    call horiz_line
     
 
 
-    ;draw E-stem
+                        ; draw E-stem
     ld hl, 22599
     ld b,8
-    call vertical_loop
+    call vertical_line
 
-    ;draw E-top
+                        ; draw E-top
     ld hl, 22599
     ld b, 4
-    call horiz_loop
+    call horiz_line
 
 
-    ;draw E-mid
+                        ; draw E-mid
     ld hl, 22695
     ld b, 4
-    call horiz_loop
+    call horiz_line
 
 
-    ;draw E-low
+                        ; draw E-low
     ld hl, 22823
     ld b, 4
-    call horiz_loop
+    call horiz_line
 
-    ;draw L-stem
+                        ; draw L-stem
     ld hl, 22605
     ld b,8
-    call vertical_loop
+    call vertical_line
 
 
 
-    ;draw L-low
+                        ; draw L-low
     ld hl, 22829
     ld b, 4
-    call horiz_loop
+    call horiz_line
 
-    ;draw L-stem
+                        ; draw L-stem
     ld hl, 22611
     ld b,8
-    call vertical_loop
+    call vertical_line
 
-    ;draw L-low
+                        ; draw L-low
     ld hl, 22835
     ld b, 4
-    call horiz_loop
+    call horiz_line
 
 
-    ;draw O-stem 1
+                        ; draw O-stem 1
     ld hl, 22617
     ld b,8
-    call vertical_loop
+    call vertical_line
 
-    ;draw O-low
+                        ; draw O-low
     ld hl, 22841
     ld b, 4
-    call horiz_loop
+    call horiz_line
 
-    ;draw O-high
+                        ; draw O-high
     ld hl, 22617
     ld b, 4
-    call horiz_loop
+    call horiz_line
 
 
-    ;draw O-stem 2
+                        ; draw O-stem 2
     ld hl, 22621
     ld b,8
-    call vertical_loop
+    call vertical_line
