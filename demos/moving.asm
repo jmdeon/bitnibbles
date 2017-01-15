@@ -99,15 +99,15 @@ start:
     call vertical_line
 
     ld hl, 22599
-    ld b, 4
+    ld b, 5
     call horiz_line
 
     ld hl, 22695
-    ld b, 4
+    ld b, 5
     call horiz_line
 
     ld hl, 22823
-    ld b, 4
+    ld b, 5
     call horiz_line
 
                         ; L 1
