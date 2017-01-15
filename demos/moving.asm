@@ -77,88 +77,172 @@ diag_left_line:
     
     
 start:
-                        ; draw H-left
+                        ; Hello
+                        
+                        ; H
     ld hl, 22592        ; Sets starting position
-    ld b,8              ; Distance to travel
+    ld b, 8             ; Distance to travel
     call vertical_line
     
-                        ; draw H-right
     ld hl, 22596
-    ld b,8
+    ld b, 8
     call vertical_line
     
-    
-                        ; draw H-mid
     ld hl, 22688
     ld b, 4
     call horiz_line
-    
+   
 
-
-                        ; draw E-stem
+                        ; E
     ld hl, 22599
-    ld b,8
+    ld b, 8
     call vertical_line
 
-                        ; draw E-top
     ld hl, 22599
     ld b, 4
     call horiz_line
 
-
-                        ; draw E-mid
     ld hl, 22695
     ld b, 4
     call horiz_line
 
-
-                        ; draw E-low
     ld hl, 22823
     ld b, 4
     call horiz_line
 
-                        ; draw L-stem
-    ld hl, 22605
-    ld b,8
+                        ; L 1
+    ld hl, 22606
+    ld b, 8
     call vertical_line
 
-
-
-                        ; draw L-low
-    ld hl, 22829
+    ld hl, 22830
     ld b, 4
     call horiz_line
 
-                        ; draw L-stem
-    ld hl, 22611
-    ld b,8
+    
+                        ; L 2
+    ld hl, 22612
+    ld b, 8
     call vertical_line
 
-                        ; draw L-low
-    ld hl, 22835
-    ld b, 4
-    call horiz_line
-
-
-                        ; draw O-stem 1
-    ld hl, 22617
-    ld b,8
-    call vertical_line
-
-                        ; draw O-low
-    ld hl, 22841
-    ld b, 4
-    call horiz_line
-
-                        ; draw O-high
-    ld hl, 22617
+    ld hl, 22836
     ld b, 4
     call horiz_line
 
 
-                        ; draw O-stem 2
-    ld hl, 22621
+                        ; O
+    ld hl, 22618
+    ld b, 8
+    call vertical_line
+
+    ld hl, 22842
+    ld b, 4
+    call horiz_line
+
+    ld hl, 22618
+    ld b, 4
+    call horiz_line
+
+    ld hl, 22622
+    ld b, 8
+    call vertical_line
+    
+                        ; World
+    
+    
+                        ; W
+    ld hl, 22976
+    ld b, 8
+    call vertical_line
+    
+    ld hl, 22980
+    ld b, 8
+    call vertical_line
+    
+    ld hl, 23138
+    ld b, 2
+    call diag_left_line
+    
+    ld hl, 23138
+    ld b, 2
+    call diag_right_line
+    
+    
+    
+                        ; O
+    ld hl, 22983
+    ld b, 8
+    call vertical_line
+
+    ld hl, 23208
+    ld b, 3
+    call horiz_line
+
+    ld hl, 22983
+    ld b, 4
+    call horiz_line
+
+    ld hl, 22987
     ld b,8
     call vertical_line
+    
+    
+                        ; R 
+    ld hl, 22990
+    ld b, 8
+    call vertical_line
+    
+    ld hl, 22990
+    ld b, 4
+    call horiz_line
+    
+    ld hl, 22993
+    ld b, 4
+    call vertical_line
+    
+    ld hl, 23118
+    ld b, 4
+    call horiz_line
+    
+    ld hl, 23118
+    ld b, 4
+    call diag_right_line
+    
+    
+                        ; L
+    ld hl, 22996
+    ld b, 8
+    call vertical_line
+
+    ld hl, 23220
+    ld b, 4
+    call horiz_line
+    
+    
+                        ; D
+    ld hl, 23002
+    ld b, 8
+    call vertical_line
+
+    ld hl, 23226
+    ld b, 3
+    call horiz_line
+    
+    ld hl, 23197
+    ld b, 1
+    call diag_left_line
+
+    ld hl, 23002
+    ld b, 3
+    call horiz_line
+    
+    ld hl, 23037
+    ld b, 1
+    call diag_right_line
+
+    ld hl, 23070
+    ld b,4
+    call vertical_line
+    
     
     ret
