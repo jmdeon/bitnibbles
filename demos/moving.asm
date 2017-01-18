@@ -4,15 +4,6 @@
 
     org 32768           ; Why 32768? Could it be another location?
 
-    
-                        ; Do we need this?
-    ld hl, 22560        ; draw black over the bytes message
-    ld b, 13
-clearloop:         
-    ld (hl), 0
-    inc hl
-    dec b
-    jp nz, clearloop
     call start
 
 
@@ -30,7 +21,7 @@ hold_loop:
                         ; all others draw downward
     
 horiz_line:
-    ld (hl), 28         ; Color
+    ld (hl), 156        ; Attribute [Flashing | Highlight | Background: R | G | B | Foreground: R | G | B]
     push bc             ; Save our b counter
     call hold           ; Call hold to make drawing appearance
     pop bc              ; Retrieve b
@@ -40,7 +31,7 @@ horiz_line:
     ret
 
 vertical_line:
-    ld (hl), 28
+    ld (hl), 156
     push bc             ; save our b counter
     call hold
     pop bc
@@ -51,7 +42,7 @@ vertical_line:
     ret
     
 diag_right_line:
-    ld (hl), 28
+    ld (hl), 156
     push bc             ; save our b counter
     call hold
     pop bc
@@ -62,7 +53,7 @@ diag_right_line:
     ret
     
 diag_left_line:
-    ld (hl), 28
+    ld (hl), 156
     push bc             ; save our b counter
     call hold
     pop bc
