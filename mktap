@@ -37,7 +37,7 @@ z80asm $1 -o $FILENAME.bin
 #If successfully compiled, create the output and clean up
 if [ -e $FILENAME.bin ]
   then
-    bin2tap -b $FILENAME.bin -o $FILENAME.tap
+    bin2tap -b -hp $FILENAME.bin -o $FILENAME.tap
     rm $FILENAME.bin
 fi
 
