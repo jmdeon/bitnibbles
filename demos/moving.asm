@@ -31,7 +31,7 @@ horiz_line:
     ret
 
 vertical_line:
-    ld (hl), 156
+    ld (hl), 163
     push bc             ; save our b counter
     call hold
     pop bc
@@ -79,8 +79,8 @@ start:
     ld b, 8
     call vertical_line
     
-    ld hl, 22688
-    ld b, 4
+    ld hl, 22689
+    ld b, 3
     call horiz_line
    
 
@@ -165,8 +165,8 @@ start:
     ld b, 8
     call vertical_line
 
-    ld hl, 23208
-    ld b, 3
+    ld hl, 23207
+    ld b, 4
     call horiz_line
 
     ld hl, 22983
