@@ -6,6 +6,37 @@
 
     call start
 
+; Slide Entire Image Right one Attribute Cell
+slide_right:
+    ld hl, 22590           ; Attribute Cell to Start at
+    ld bc, 766             ; Number of Attribute Cells to Change
+    ld e, 0                ; e will be the previous cell color (black)
+slide_right_loop:
+    ld a, (hl)             ;store current attribute value into a
+    ld (hl), e             ;load previous attribute value
+    inc hl                 ;move pointer to next attribute 
+    ld e, a                ;set current value as previous value
+    dec bc                 ;Decrement the counter 
+    ld a,b                 ;Determine if you have reached the end, continue otherwise
+    or c
+    jp nz, slide_right_loop
+    ret  
+
+; Slide Entire Image Left one Attribute Cell
+slide_left:
+    ld hl, 23295
+    ld bc, 766
+    ld e, 0
+slide_left_loop:
+    ld a, (hl)
+    ld (hl), e
+    dec hl
+    ld e, a
+    dec bc
+    ld a,b
+    or c
+    jp nz, slide_left_loop
+    ret 
 
 hold:
     inc a
@@ -15,6 +46,24 @@ hold_loop:
     ld a,b
     or c
     jr nz, hold_loop
+    ret
+
+long_hold:              ; Longer Hold, x10 hold
+    call hold
+    call hold
+    call hold
+    call hold
+    call hold
+    call hold
+    call hold
+    call hold
+    call hold
+    call hold
+    call hold
+    call hold
+    call hold
+    call hold
+    call hold
     ret
     
                         ; horiz_line draws to the right while
@@ -234,6 +283,10 @@ start:
     ld hl, 23070
     ld b,4
     call vertical_line
-    
-    
-    ret
+
+animate_loop:
+    call slide_right
+    call long_hold
+    call slide_left
+    call long_hold
+    jp animate_loop
