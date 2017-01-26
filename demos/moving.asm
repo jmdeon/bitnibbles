@@ -285,8 +285,20 @@ start:
     call vertical_line
 
 animate_loop:
-    call slide_right
-    call long_hold
+    ld hl, 23560
+    ld (hl), 0
+pause_loop:
+    ld a, (hl)
+    cp 0                 ;Don't do anything if there is no button pressed
+    jr z, pause_loop
+    ld a, (hl)
+    cp 0x36              ;Did they push A? (LEFT)
+    jr nz, skip_left
     call slide_left
-    call long_hold
+    jp animate_loop
+skip_left:
+    ld a, (hl)
+    cp 0x64              ;Did they push D? (RIGHT)
+    jr nz, pause_loop
+    call slide_right
     jp animate_loop
