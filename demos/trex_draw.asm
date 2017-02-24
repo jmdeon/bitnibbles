@@ -9,7 +9,7 @@ start:
   ldir
 
   ld b, 40     ;y-coord of top-left of trex box
-  ld c, 16     ;x-coord of top-right "     "
+  ld c, 16     ;x-coord of    "           "
 
   ;;DRAW TREX ROUTINE starts here with b holding the y-coord and c the x-coord
   exx
