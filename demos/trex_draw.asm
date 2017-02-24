@@ -13,6 +13,8 @@ start:
 
   ;;DRAW TREX ROUTINE starts here with b holding the y-coord and c the x-coord
   exx
+  ld d,  40    ;number of rows
+  push de      ;loop counter first thing pushed on stack
   ld de, trex  ;set de' to trex addr
   exx
 outer_loop:
@@ -40,11 +42,17 @@ row_loop:
   ld e, l
   exx          ;exchange so state same as start of outer_loop
 
-  pop bc       ;get outer loop counter back
-  dec b        
+  pop bc       ;get y-coord
+  dec b        ;decrement y-coord
+  exx          ;exchange so  
+  pop bc       ;loop counter in b'
+  dec b        ;decrement loop counter
+  push bc      ;push loop counter back on stack
+  exx          ;exchange so state same as top of loop
+          
 
   ;loop until all 40 lines of trex drawn
-  djnz outer_loop
+  jp nz, outer_loop
 
 
 loop:
@@ -52,31 +60,51 @@ loop:
 
 trex:
         ;; ROW 1
-        defb $00, $00, $03, $FF, $FC
-        defb $00, $00, $0F, $3F, $FF
-        defb $00, $00, $0F, $3F, $FF
-        defb $00, $00, $0F, $FF, $FF
+        defb $00, $00, $03, $ff, $fc 
+        defb $00, $00, $03, $ff, $fc
+        defb $00, $00, $0f, $3f, $ff
+        defb $00, $00, $0f, $3f, $ff
+        defb $00, $00, $0f, $3f, $ff
+        defb $00, $00, $0f, $3f, $ff
+        defb $00, $00, $0f, $ff, $ff
+        defb $00, $00, $0f, $ff, $ff
         
         ;; ROW 2
-        defb $00, $00, $0F, $FF, $FF
-        defb $00, $00, $0F, $FC, $00
-        defb $00, $00, $0F, $FF, $F0
-        defb $C0, $00, $3F, $F0, $00
+        defb $00, $00, $0f, $ff, $ff
+        defb $00, $00, $0f, $ff, $ff
+        defb $00, $00, $0f, $fc, $00
+        defb $00, $00, $0f, $fc, $00
+        defb $00, $00, $0f, $ff, $f0
+        defb $00, $00, $0f, $ff, $f0
+        defb $c0, $00, $3f, $f0, $00
+        defb $c0, $00, $3f, $f0, $00
         
         ;; ROW 3
-        defb $C0, $00, $FF, $F0, $00
-        defb $F0, $0F, $FF, $FF, $00
-        defb $FC, $3F, $FF, $F3, $00
-        defb $FF, $FF, $FF, $F0, $00
+        defb $c0, $00, $ff, $f0, $00
+        defb $c0, $00, $ff, $f0, $00
+        defb $f0, $0f, $ff, $ff, $00
+        defb $f0, $0f, $ff, $ff, $00
+        defb $fc, $3f, $ff, $f3, $00
+        defb $fc, $3f, $ff, $f3, $00
+        defb $ff, $ff, $ff, $f0, $00
+        defb $ff, $ff, $ff, $f0, $00
         
         ;; ROW 4
-        defb $3F, $FF, $FF, $F0, $00
-        defb $0F, $FF, $FF, $C0, $00
-        defb $00, $FF, $FF, $00, $00
-        defb $00, $FC, $FC, $00, $00
+        defb $3f, $ff, $ff, $f0, $00
+        defb $3f, $ff, $ff, $f0, $00
+        defb $0f, $ff, $ff, $c0, $00
+        defb $0f, $ff, $ff, $c0, $00
+        defb $00, $ff, $ff, $00, $00
+        defb $00, $ff, $ff, $00, $00
+        defb $00, $ff, $fc, $00, $00
+        defb $00, $ff, $fc, $00, $00
         
         ;; ROW 5
-        defb $00, $3F, $3C, $00, $00
-        defb $00, $3C, $0C, $00, $00
-        defb $00, $30, $0C, $00, $00
-        defb $00, $3C, $0F, $00, $00
+        defb $00, $3f, $3c, $00, $00
+        defb $00, $3f, $3c, $00, $00
+        defb $00, $3c, $0c, $00, $00
+        defb $00, $3c, $0c, $00, $00
+        defb $00, $30, $0c, $00, $00
+        defb $00, $30, $0c, $00, $00
+        defb $00, $3c, $0f, $00, $00
+        defb $00, $3c, $0f, $00, $00
