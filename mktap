@@ -38,6 +38,7 @@ z80asm $1 -o $FILENAME.bin
 if [ -e $FILENAME.bin ]
   then
     bin2tap -b -hp $FILENAME.bin -o $FILENAME.tap
+    printf "The binary size is: %s\n" `ls -lh $FILENAME.bin | awk '{print $5}'` 
     rm $FILENAME.bin
 fi
 
