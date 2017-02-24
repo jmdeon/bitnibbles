@@ -58,18 +58,17 @@ pause_loop:
 pause_inner_loop:
   ld a, (hl)   ;;Load last pressed key from keyboard
   cp $0        ;;Check if it hasn't been pressed yet
-  jr z, pause_inner_loop  ;;Loop back if it hasn't been touched
-  ;cp 0x36                ;;Did they push A? ;;This logic needs to be replaced with spacebar, commented out for now @TODO
-  ;jr nz, pause_exit      ;;if they pushed A, exit the pause loop
-  ;jp pause_loop          ;;if they didn't push A, return back to the loop
+  jr z, pause_inner_loop ;;Loop back if it hasn't been touched
+  cp 0x30                ;;Did they push spacebar?
+  jr z, pause_exit       ;;if they pushed spacebar, exit the pause loop
+  jp pause_loop          ;;if they didn't push spacebar, return back to the pause loop
   jp pause_exit
 pause_exit:
   ret
 
 ;Animate the landscape once the user leaves the welcome screen
 animate_landscape:
-  ld a, (hl)   ;;For now just change the border color to simulate this, this WILL be removed once we have correct functionality @TODO
-  call 0x229b
+  call 0x229b      ;;For now, set the background color to the value of 0x30 (spacebar) to simulate moving on, this WILL be removed once we have correct functionality @TODO
   jp forever_loop  ;;For now, lock the program here, this WILL be removed once we have correct functionality @TODO
   ret
 
