@@ -1,96 +1,59 @@
 org 32768
 
 start:
-  ld hl, $5800 ;;start of attr address
-  ld de, $5800 ;;start of attr address
-  ld (hl), $38 ;;grey background, black foreground
+  ld hl, $5800 ;start of attr address
+  ld de, $5800 ;start of attr address
+  ld (hl), $38 ;grey background, black foreground
   inc e
-  ld bc, $2ff   ;;32 x 24 attr addresses
+  ld bc, $2ff  ;32 x 24 attr addresses
   ldir
 
-  ld hl, $7000
-  ld de, trex
-  ld (hl), d
+  ld hl, $7000 ;address to hold current trex address
+  ld de, trex  ;get initial trex addr
+  ld (hl), d   ;first byte of addr at $7000
   inc hl
-  ld (hl), e
+  ld (hl), e   ;second byte of addr at $7001
   
 
-  ld b, 30 ;primes
-  ld c, 16
+  ld b, 40     ;y-coord of top-left of trex box
+  ld c, 16     ;x-coord of top-right "     "
 outer_loop:
-  push bc
-  call $22aa  ;  hl holds byte addr of c,b
+  push bc     
+  call $22aa   ;hl holds pixel-byte addr of c,b
 
   ;get trex addr
   exx
-  ld hl, $7000
+  ld hl, $7000 ;trex address address, no you aren't seeing double
   ld d, (hl)
   inc hl
-  ld e, (hl)
+  ld e, (hl)   ;de temporarily holds current trex address
 
   ld h, d
-  ld l, e ;hl' now holds current trex addr
+  ld l, e      ;hl' now holds current trex addr
 
-  ld b, 5 ;loop 5 times to put 5 bytes of trex onto screen
+  ld b, 5      ;loop 5 times to put 5 bytes of trex onto screen
 row_loop:
-  ld d, (hl)
-  push de
-  exx
-  pop de
-  ld (hl), d
-  inc hl
-  exx
-  inc hl
-  djnz row_loop
-  ;store back out trex
-  ld d, h
+  ld d, (hl)   ;d holds current trex byte
+  push de      ;push trex byte to persist exchange
+  exx          ;exchange so hl holds current pixel byte addr
+  pop de       ;pop trex byte
+  ld (hl), d   ;put current trex byte into current pixel addr byte
+  inc hl       ;inc current pixel addr byte
+  exx          ;exchange to get current trex byte back in hl
+  inc hl       ;inc current trex addr byte
+  djnz row_loop;loop until all 5 bytes of row complete
+  ;store back out current trex addr
+  ld d, h      ;put trex addr into de 
   ld e, l
-  ld hl, $7000
-  ld (hl), d
-  inc hl
-  ld (hl), e
+  ld hl, $7000 ;give hl trex addr byte
+  ld (hl), d   ;$7000 has first byte of trex addr
+  inc hl       
+  ld (hl), e   ;$7001 has second byte of trex addr
 
-  pop bc
-  dec b
+  pop bc       ;get outer loop counter back
+  dec b        
   
-  djnz outer_loop
-
-
-;  ld hl, $7000
-;  ld (hl), 40
-;
-;  exx ; to prime
-;  ld b, 100 ;primes
-;  ld c, 16
-;  push bc
-;
-;row:
-;  pop bc
-;  call $22aa  ;  hl' holds byte addr of c,b
-;  exx ; to norm
-;
-;  
-;  ld hl, trex ;hl has trex addr
-;  ld b, 5
-;byte:
-;  ld d, (hl)
-;  push de
-;  inc hl
-;  exx ;to prime
-;  pop de
-;  ld (hl), d
-;  inc hl
-;  exx ; to norm
-;  djnz byte
-;
-;  exx ; to prime
-;  ld hl, $7000
-; push bc
-;  ld b, (hl)
-;  dec b
-;  ld (hl), b
-;  jp nz, row
-
+  djnz outer_loop;loop until all 40 lines of trex drawn
 
 
 loop:
