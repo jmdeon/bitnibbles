@@ -20,7 +20,7 @@ GAME_LOOP:
 
 ;Sets the entire screen (border and center screen) to be white (unhighlighted)
 set_all_white:
-  ld a, $7a    ;;set border to white
+  ld a, $7    ;;set border to white
   call $229b   ;;send border color to ULA
   ld hl, $5800 ;;start of attr address
   ld de, $5800 ;;start of attr address
