@@ -36,8 +36,8 @@ trex:
         defb $0f, $ff, $ff, $c0, $00
         defb $00, $ff, $ff, $00, $00
         defb $00, $ff, $ff, $00, $00
-        defb $00, $fc, $fc, $00, $00
-        defb $00, $fc, $fc, $00, $00
+        defb $00, $ff, $fc, $00, $00
+        defb $00, $ff, $fc, $00, $00
         
         ;; ROW 5
         defb $00, $3f, $3c, $00, $00
