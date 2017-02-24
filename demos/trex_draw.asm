@@ -8,25 +8,18 @@ start:
   ld bc, $2ff  ;32 x 24 attr addresses
   ldir
 
-  ld hl, $7000 ;address to hold current trex address
-  ld de, trex  ;get initial trex addr
-  ld (hl), d   ;first byte of addr at $7000
-  inc hl
-  ld (hl), e   ;second byte of addr at $7001
-  
-
   ld b, 40     ;y-coord of top-left of trex box
   ld c, 16     ;x-coord of top-right "     "
+
+  ;;DRAW TREX ROUTINE starts here with b holding the y-coord and c the x-coord
+  exx
+  ld de, trex  ;set de' to trex addr
+  exx
 outer_loop:
-  push bc     
+  push bc      ;save our current y-coord
   call $22aa   ;hl holds pixel-byte addr of c,b
 
-  ;get trex addr
-  exx
-  ld hl, $7000 ;trex address address, no you aren't seeing double
-  ld d, (hl)
-  inc hl
-  ld e, (hl)   ;de temporarily holds current trex address
+  exx          ;de' holds current trex addr
 
   ld h, d
   ld l, e      ;hl' now holds current trex addr
@@ -36,24 +29,22 @@ row_loop:
   ld d, (hl)   ;d holds current trex byte
   push de      ;push trex byte to persist exchange
   exx          ;exchange so hl holds current pixel byte addr
-  pop de       ;pop trex byte
+  pop de       ;pop to get current trex byte
   ld (hl), d   ;put current trex byte into current pixel addr byte
   inc hl       ;inc current pixel addr byte
   exx          ;exchange to get current trex byte back in hl
   inc hl       ;inc current trex addr byte
   djnz row_loop;loop until all 5 bytes of row complete
-  ;store back out current trex addr
+
   ld d, h      ;put trex addr into de 
   ld e, l
-  ld hl, $7000 ;give hl trex addr byte
-  ld (hl), d   ;$7000 has first byte of trex addr
-  inc hl       
-  ld (hl), e   ;$7001 has second byte of trex addr
+  exx          ;exchange so state same as start of outer_loop
 
   pop bc       ;get outer loop counter back
   dec b        
-  
-  djnz outer_loop;loop until all 40 lines of trex drawn
+
+  ;loop until all 40 lines of trex drawn
+  djnz outer_loop
 
 
 loop:
