@@ -1,7 +1,7 @@
 cact2:
         defb 24, 3
         ;; ROW 1
-        defb $00, $17, $00
+        defb $00, $18, $00
         defb $00, $3c, $00
         defb $00, $3c, $00
         defb $00, $3c, $00
