@@ -60,7 +60,7 @@ row_loop:
   pop de       ;pop to get current trex byte
   ld a, d      ;put trex byte into accumulator
   and (hl)
-  jnz end_game
+  jp nz, end_game
   ld a, d
   or (hl)
   ld (hl), a   ;DRAW TREX BYTE
@@ -107,7 +107,7 @@ delete_bitmap:
   ld d, h
   ld e, l
   exx
-outer_loop:
+delete_outer_loop:
   push bc      ;save our current y-coord
   call $22aa   ;hl holds pixel-byte addr of c,b
 
@@ -121,7 +121,7 @@ outer_loop:
   push bc      
   push de      
   ld b, c      ;loop width times to put 5 bytes of trex onto screen
-row_loop:
+delete_row_loop:
   ld d, (hl)   ;d holds current trex byte
   push de      ;push trex byte to persist exchange
   exx          ;exchange so hl holds current pixel byte addr
@@ -134,7 +134,7 @@ row_loop:
 
   exx          ;exchange to get current trex byte back in hl
   inc hl       ;inc current trex addr byte
-  djnz row_loop;loop until all 5 bytes of row complete
+  djnz delete_row_loop;loop until all 5 bytes of row complete
 
   ld d, h      ;put trex addr into de 
   ld e, l
@@ -150,7 +150,7 @@ row_loop:
           
 
   ;loop until all 40 lines of trex drawn
-  jp nz, outer_loop
+  jp nz, delete_outer_loop
 
   pop bc
   ret
