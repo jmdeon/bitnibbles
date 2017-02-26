@@ -1,4 +1,5 @@
 cact1:
+        defb 24, 3
         ;; ROW 1
         defb $00, $1c, $00
         defb $00, $3e, $00
@@ -20,7 +21,7 @@ cact1:
         defb $07, $ff, $e0
         
         ;; ROW 3
-        defb $03, $fe, $c0
+        defb $03, $ff, $c0
         defb $01, $fe, $00
         defb $00, $3e, $00
         defb $00, $3e, $00
