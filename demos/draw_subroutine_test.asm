@@ -59,8 +59,9 @@ row_loop:
 
   pop de       ;pop to get current trex byte
   ld a, d      ;put trex byte into accumulator
-  and (hl)
-  jp nz, end_game
+  and (hl)     ;collision detection
+  jp nz, set_end_flag
+after_end_game_flag:
   ld a, d
   or (hl)
   ld (hl), a   ;DRAW TREX BYTE
@@ -87,9 +88,20 @@ row_loop:
   jp nz, outer_loop
 
   pop bc
+  ld hl, $7000;check end game flag
+  ld a, (hl)
+  cp a, $ff
+  jp nz, end_game
   ret
 
 
+set_end_flag:
+  push hl
+  ld hl, $7000
+  ld (hl), $ff
+  pop hl
+  jp after_end_game_flag
+  
 end_game:
   jp end_game
 
