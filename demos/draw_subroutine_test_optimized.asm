@@ -74,6 +74,50 @@ row_loop:
 
 end_game:
   jp end_game
+
+delete_bitmap:
+  push bc
+  exx
+  pop bc   ;bc' has x,y
+  exx
+
+  ld b, 24
+  push bc
+delete_outer_loop:
+  
+  exx
+  push bc  ;save current y coord
+  call $22aa   ;hl' holds pixel-byte addr of c,b
+
+  ld b, 3
+delete_row_loop:
+  exx
+  ld d, (hl)
+  inc hl ;inc bitmap_addr
+  push de
+  exx
+  pop de
+
+  ld a, d      ;put trex byte into accumulator
+  and (hl)     ;collision detection
+  jp nz, end_game
+  
+  ld a,d
+  xor (hl)
+  ld (hl), a ;draw byte
+  inc hl  ;inc draw location
+
+  djnz delete_row_loop;loop until all 3 bytes of row complete
+  pop bc   ;get y-coord
+  dec b    ;dec y-coord
+  exx
+  pop bc
+  dec b
+  push bc
+
+  jp nz, delete_outer_loop
+
+
   
 
 
