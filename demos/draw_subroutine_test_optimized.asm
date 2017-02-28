@@ -78,7 +78,7 @@ done_setting:
   pop bc
 
   ld hl, end_game_flag
-  ld a, (hl)
+  ld a, $ff
   xor (hl)
   jp z, end_game
   ret
