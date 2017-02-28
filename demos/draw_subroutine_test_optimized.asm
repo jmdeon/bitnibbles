@@ -16,6 +16,11 @@ start:
   ld hl, trex
   ld b, 40
   ld c, 16
+  call delete_bitmap
+
+  ld hl, trex
+  ld b, 40
+  ld c, 16
   call draw_bitmap
 loop:
   jp loop
@@ -54,8 +59,8 @@ row_loop:
 
   ld a, d      ;put trex byte into accumulator
   and (hl)     ;collision detection
-  jp nz, end_game
-  
+  jp nz, set_end_game_flag
+done_setting: 
   ld a,d
   or (hl)
   ld (hl), a ;draw byte
@@ -70,10 +75,32 @@ row_loop:
   push bc
 
   jp nz, outer_loop
+  pop bc
 
+  ld hl, end_game_flag
+  ld a, (hl)
+  xor (hl)
+  jp z, end_game
+  ret
+
+
+set_end_game_flag:
+  push hl
+  ld hl, end_game_flag
+  ld (hl), $ff
+  pop hl
+  jp done_setting
+    
+
+
+end_game_flag:
+  defb $00
 
 end_game:
   jp end_game
+
+
+
 
 delete_bitmap:
   push bc
@@ -97,10 +124,6 @@ delete_row_loop:
   push de
   exx
   pop de
-
-  ld a, d      ;put trex byte into accumulator
-  and (hl)     ;collision detection
-  jp nz, end_game
   
   ld a,d
   xor (hl)
@@ -116,6 +139,8 @@ delete_row_loop:
   push bc
 
   jp nz, delete_outer_loop
+  pop bc
+  ret
 
 
   
