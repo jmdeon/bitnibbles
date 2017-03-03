@@ -35,12 +35,16 @@ loop:
 ;assume hl holds bitmap addr 
 ;assume bc holds x,y
 draw_bitmap:
+  ld d, (hl) ;height in d
+  inc hl
+  ld e, (hl) ;width in e
+  inc hl
   push bc
   exx
   pop bc   ;bc' has x,y
   exx
 
-  ld b, 24
+  ld b, d
   push bc
 outer_loop:
   
@@ -48,7 +52,7 @@ outer_loop:
   push bc  ;save current y coord
   call $22aa   ;hl' holds pixel-byte addr of c,b
 
-  ld b, 3
+  ld b, e
 row_loop:
   exx
   ld d, (hl)
@@ -103,12 +107,17 @@ end_game:
 
 
 delete_bitmap:
+  ld d, (hl) ;height in d
+  inc hl
+  ld e, (hl) ;width in e
+  inc hl
+
   push bc
   exx
   pop bc   ;bc' has x,y
   exx
 
-  ld b, 24
+  ld b, d
   push bc
 delete_outer_loop:
   
@@ -116,7 +125,9 @@ delete_outer_loop:
   push bc  ;save current y coord
   call $22aa   ;hl' holds pixel-byte addr of c,b
 
-  ld b, 3
+  exx
+  ld b, e
+  exx
 delete_row_loop:
   exx
   ld d, (hl)
@@ -148,7 +159,7 @@ delete_row_loop:
 
 trex:
         ;; ROW 1
-;        defb 24, 3
+        defb 24, 3
         defb $00, $00, $00
         defb $00, $00, $00
         defb $00, $00, $00
