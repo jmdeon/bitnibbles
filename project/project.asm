@@ -17,14 +17,13 @@ GAME_LOADING:
   ret
 
 GAME_LOOP:
-    ;call jump_demo
     call jump_iterate
     call hold
     jp GAME_LOOP
   ret
 
 jmp_positions:
-  defb 60, 80, 90, 120, 120, 80, 80, 60
+  defb 60, 70, 80, 100, 105, 109, 109, 105, 100, 80, 70, 60
 
 jmp_index:
   defb 00
@@ -32,7 +31,7 @@ jmp_index:
 jump_iterate:
   ld hl, jmp_index        
   ld b, (hl)              ;Load the jump index value into b
-  ld a, 7                 ;a is the number of positions in the jump array
+  ld a, 11                 ;a is the number of positions in the jump array
   cp b              
   jp nz, jmp_index_not_8  ;if jump index is not 8, jump forward and check if it's 0
   ld b, 0                 ;if jump index is 8, reset it
@@ -49,7 +48,7 @@ jmp_index_not_8:
   ld (hl), 0
 jmp_next_index: ;THIS IS WEHERE IT GETS REALLY WEIRD
   call jmp_load_b         ;b = jmp_positions[old_index]
-  ld de, trex
+  ld hl, trex
   ld c, 16
   call delete_bitmap      ;delete the previous trex
   ld hl, jmp_index
@@ -57,7 +56,7 @@ jmp_next_index: ;THIS IS WEHERE IT GETS REALLY WEIRD
   inc b
   ld (hl), b              ;save the new index value
   call jmp_load_b
-  ld de, trex
+  ld hl, trex
   ld c, 16
   call draw_bitmap        ;draw the trex in the new position
 jmp_end:
@@ -71,24 +70,6 @@ jmp_load_b:   ;Expects b to hold index and will return y position in b
   ld b, (hl)              ;b = jmp_positions[index]
   ret
   
-
-  ;===============================
-  ;===============================
-  ;load index
-  ;if index == 7:
-  ;   set index to 0
-  ;load jump
-  ;if (index == 0 && jump) || (index != 0):
-  ;   load y = jump_positions[index]
-  ;   delete dino at y
-  ;   load y = jump_positions[index] + 1
-  ;   draw dino at y
-  ;   load jump_index
-  ;   inc jump_index
-  ;store index
-  ;ret
-  
-
 ;Sets the entire screen (border and center screen) to be white (unhighlighted)
 set_all_white:
   ld a, $7    ;;set border to white
@@ -107,7 +88,7 @@ init_high_score:
 
 ;Initalize and draw the Trex in its starting position
 draw_dino_init:
-  ld de, trex
+  ld hl, trex
   ld c, 16     ;;X coordinate of top-left of initlal trex posiiton
   ld b, 60     ;;Y coordinate of top-left of initial trex position
   call draw_bitmap ;;Draw the dino
@@ -115,7 +96,7 @@ draw_dino_init:
   ;ld c, 16     ;;X coordinate of top-left of initlal trex posiiton
   ;ld b, 100     ;;Y coordinate of top-left of initial trex position
   ;call draw_bitmap 
-  ld de, cactus
+  ld hl, cactus
   ld c, 40     ;;X coordinate of top-left of initlal trex posiiton
   ld b, 60    ;;Y coordinate of top-left of initial trex position
   call draw_bitmap 
@@ -166,144 +147,123 @@ draw_high_score:
 high_score_example:
   defb '0000'
 
+;hl bitmap addr
+;b   loop counter
+;bc' x,y
+;hl' pixel byte addr
+;d' draw byte
+
+;assume hl holds bitmap addr 
+;assume bc holds x,y
 draw_bitmap:
+  push bc
+  exx
+  pop bc   ;bc' has x,y
+  exx
+
+  ld b, 24
+  push bc
+outer_loop:
+  
+  exx
+  push bc  ;save current y coord
+  call $22aa   ;hl' holds pixel-byte addr of c,b
+
+  ld b, 3
+row_loop:
+  exx
+  ld d, (hl)
+  inc hl ;inc bitmap_addr
   push de
   exx
   pop de
-  ld h, d
-  ld l, e
-  ld d, (hl)
-  inc hl
-  ld e, (hl)
-  inc hl
-  push de
-  ld d, h
-  ld e, l
-  exx
-outer_loop:
-  push bc      ;save our current y-coord
-  call $22aa   ;hl holds pixel-byte addr of c,b
 
-  exx          ;de' holds current trex addr
-
-  ld h, d
-  ld l, e      ;hl' now holds current trex addr
-
-  pop de       ;de has xy
-  pop bc       ;bc has height/width
-  push bc      
-  push de      
-  ld b, c      ;loop width times to put 5 bytes of trex onto screen
-row_loop:
-  ld d, (hl)   ;d holds current trex byte
-  push de      ;push trex byte to persist exchange
-  exx          ;exchange so hl holds current pixel byte addr
-
-  pop de       ;pop to get current trex byte
   ld a, d      ;put trex byte into accumulator
-  and (hl)
-  jp nz, end_game
-  ld a, d
+  and (hl)     ;collision detection
+  jp nz, set_end_game_flag
+done_setting: 
+  ld a,d
   or (hl)
-  ld (hl), a   ;DRAW TREX BYTE
-  inc hl       ;inc current pixel addr byte
+  ld (hl), a ;draw byte
+  inc hl  ;inc draw location
 
-  exx          ;exchange to get current trex byte back in hl
-  inc hl       ;inc current trex addr byte
-  djnz row_loop;loop until all 5 bytes of row complete
-
-  ld d, h      ;put trex addr into de 
-  ld e, l
-  exx          ;exchange so state same as start of outer_loop
-
-  pop bc       ;get y-coord
-  dec b        ;decrement y-coord
-  exx          ;exchange so  
-  pop bc       ;loop counter in b'
-  dec b        ;decrement loop counter
-  push bc      ;push loop counter back on stack
-  exx          ;exchange so state same as top of loop
-          
-
-  ;loop until all 40 lines of trex drawn
-  jp nz, outer_loop
-
+  djnz row_loop;loop until all 3 bytes of row complete
+  pop bc   ;get y-coord
+  dec b    ;dec y-coord
+  exx
   pop bc
+  dec b
+  push bc
+
+  jp nz, outer_loop
+  pop bc
+
+  ld hl, end_game_flag
+  ld a, $ff
+  xor (hl)
+  jp z, end_game
   ret
 
+
+set_end_game_flag:
+  push hl
+  ld hl, end_game_flag
+  ld (hl), $ff
+  pop hl
+  jp done_setting
+
+end_game_flag:
+  defb $00
 
 end_game:
   jp end_game
 
+
 delete_bitmap:
+  push bc
+  exx
+  pop bc   ;bc' has x,y
+  exx
+
+  ld b, 24
+  push bc
+delete_outer_loop:
+  
+  exx
+  push bc  ;save current y coord
+  call $22aa   ;hl' holds pixel-byte addr of c,b
+
+  ld b, 3
+delete_row_loop:
+  exx
+  ld d, (hl)
+  inc hl ;inc bitmap_addr
   push de
   exx
   pop de
-  ld h, d
-  ld l, e
-  ld d, (hl)
-  inc hl
-  ld e, (hl)
-  inc hl
-  push de
-  ld d, h
-  ld e, l
-  exx
-delete_outer_loop:
-  push bc      ;save our current y-coord
-  call $22aa   ;hl holds pixel-byte addr of c,b
-
-  exx          ;de' holds current trex addr
-
-  ld h, d
-  ld l, e      ;hl' now holds current trex addr
-
-  pop de       ;de has xy
-  pop bc       ;bc has height/width
-  push bc      
-  push de      
-  ld b, c      ;loop width times to put 5 bytes of trex onto screen
-delete_row_loop:
-  ld d, (hl)   ;d holds current trex byte
-  push de      ;push trex byte to persist exchange
-  exx          ;exchange so hl holds current pixel byte addr
-
-  pop de       ;pop to get current trex byte
-  ld a, d      ;put trex byte into accumulator
+  
+  ld a,d
   xor (hl)
-  ld (hl), a   ;DRAW TREX BYTE
-  inc hl       ;inc current pixel addr byte
+  ld (hl), a ;draw byte
+  inc hl  ;inc draw location
 
-  exx          ;exchange to get current trex byte back in hl
-  inc hl       ;inc current trex addr byte
-  djnz delete_row_loop;loop until all 5 bytes of row complete
+  djnz delete_row_loop;loop until all 3 bytes of row complete
+  pop bc   ;get y-coord
+  dec b    ;dec y-coord
+  exx
+  pop bc
+  dec b
+  push bc
 
-  ld d, h      ;put trex addr into de 
-  ld e, l
-  exx          ;exchange so state same as start of outer_loop
-
-  pop bc       ;get y-coord
-  dec b        ;decrement y-coord
-  exx          ;exchange so  
-  pop bc       ;loop counter in b'
-  dec b        ;decrement loop counter
-  push bc      ;push loop counter back on stack
-  exx          ;exchange so state same as top of loop
-          
-
-  ;loop until all 40 lines of trex drawn
   jp nz, delete_outer_loop
-
   pop bc
   ret
-
 
 high_score_value:
         defw $00
 
 trex:
         ;; ROW 1
-        defb 24, 3
         defb $00, $00, $00
         defb $00, $00, $00
         defb $00, $00, $00
@@ -334,7 +294,6 @@ trex:
         defb $06, $30, $00
 
 cactus:
-        defb 24, 3
         ;; ROW 1
         defb $00, $06, $00
         defb $00, $0f, $00
@@ -375,72 +334,6 @@ hold_loop:
     or c
     jr nz, hold_loop
     ret
-
-jump_demo:
-  ld de, trex
-  ld c, 16
-  ld b, 60
-  call delete_bitmap
-  ld de, trex
-  ld c, 16
-  ld b, 80
-  call draw_bitmap
-  call hold
-  ld de, trex
-  ld c, 16
-  ld b, 80
-  call delete_bitmap
-  ld de, trex
-  ld c, 16
-  ld b, 90
-  call draw_bitmap
-  call hold
-  ld de, trex
-  ld c, 16
-  ld b, 90
-  call delete_bitmap
-  ld de, trex
-  ld c, 16
-  ld b, 100
-  call draw_bitmap
-  call hold
-  ld de, trex
-  ld c, 16
-  ld b, 100
-  call delete_bitmap
-  ld de, trex
-  ld c, 16
-  ld b, 100
-  call draw_bitmap
-  call hold
-  ld de, trex
-  ld c, 16
-  ld b, 100
-  call delete_bitmap
-  ld de, trex
-  ld c, 16
-  ld b, 90
-  call draw_bitmap
-  call hold
-  ld de, trex
-  ld c, 16
-  ld b, 90
-  call delete_bitmap
-  ld de, trex
-  ld c, 16
-  ld b, 80
-  call draw_bitmap
-  call hold
-  ld de, trex
-  ld c, 16
-  ld b, 80
-  call delete_bitmap
-  ld de, trex
-  ld c, 16
-  ld b, 60
-  call draw_bitmap
-  call hold 
-  jp jump_demo
 
 ;Lock the program in a loop which lasts forever
 forever_loop:
