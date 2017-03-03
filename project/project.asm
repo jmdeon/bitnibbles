@@ -6,14 +6,16 @@ start:
   call draw_dino_init
   call draw_no_internet
   call pause_loop_spacebar
-  ;call GAME_LOADING
+  call GAME_LOADING
   call GAME_LOOP
   ;jp forever_loop
   ret
 
 GAME_LOADING:
-  call animate_landscape
-  call draw_high_score
+  ;call animate_landscape
+  ;call draw_high_score
+  ld hl, jmp_index
+  ld (hl), 0
   ret
 
 GAME_LOOP:
@@ -46,6 +48,11 @@ jmp_index_not_8:
   cp $30                  
   jp nz, jmp_end          ;if the last key wasn't a spacebar, exit. Else inc
   ld (hl), 0
+  ld hl, 497
+  ld de, 20
+  call 949
+  ld hl, jmp_index
+  ld b, (hl)
 jmp_next_index: ;THIS IS WEHERE IT GETS REALLY WEIRD
   call jmp_load_b         ;b = jmp_positions[old_index]
   ld hl, trex
