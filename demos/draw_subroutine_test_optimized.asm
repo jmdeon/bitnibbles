@@ -152,8 +152,6 @@ delete_row_loop:
   jp nz, delete_outer_loop
   pop bc
   ret
-
-
   
 
 
