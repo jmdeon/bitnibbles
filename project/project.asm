@@ -6,9 +6,11 @@ start:
   call draw_dino_init
   call draw_no_internet
   call pause_loop_spacebar
-  call GAME_LOOP
-  ret
-
+GAME_LOADING:
+  ;call animate_landscape
+  ;call draw_high_score
+  ld hl, jmp_index
+  ld (hl), 0
 GAME_LOOP:
     call jump_iterate
     call hold
@@ -22,10 +24,21 @@ GAME_LOOP:
     call hold
     call cact_5
     jp GAME_LOOP
-  ret
-  
-  
-  
+
+GAME_END:
+   call draw_end_screen
+   ld hl, end_game_flag
+   ld (hl), $00
+   ld hl, pos
+   ld (hl), $a0
+   call pause_loop_spacebar
+   jp start
+
+draw_end_screen:
+   ld a, 0
+   call $229b
+   ret
+
 hold:
     inc a
     ld bc,$02ff         ; max waiting time. Why?
@@ -35,7 +48,6 @@ hold_loop:
     or c
     jr nz, hold_loop
     ret
-  
 
 pos: defb $a0
 
@@ -67,8 +79,6 @@ dino_3:
   call delete_bitmap
   ret
   
-
-
 cact_1:
   ld b, 60
   ld hl, pos
@@ -136,7 +146,6 @@ cact_5:
   ld (hl), a
   ret
 
-
 jmp_positions:
   defb 60, 70, 80, 100, 105, 109, 109, 105, 100, 80, 70, 60
 
@@ -200,6 +209,13 @@ set_all_white:
   inc e        ;;move to the next attribute byte
   ld bc, $2ff  ;;32 x 24 attr addresses - 1
   ldir         ;;Loads remaning attribute bytes with $38
+set_pixels_white:
+  ld hl, $4000
+  ld de, $4000
+  ld (hl), 0
+  inc e
+  ld bc, $17ff
+  ldir
   ret
 
 ;Initalize the high score value in memory as 0
@@ -255,9 +271,6 @@ draw_high_score:
 high_score_example:
   defb '0000'
 
-  
-  
-  
 ;hl bitmap addr
 ;b   loop counter
 ;bc' x,y
@@ -312,9 +325,8 @@ done_setting:
   ld hl, end_game_flag
   ld a, $ff
   xor (hl)
-  jp z, end_game
+  jp z, GAME_END
   ret
-
 
 set_end_game_flag:
   push hl
@@ -325,10 +337,6 @@ set_end_game_flag:
 
 end_game_flag:
   defb $00
-
-end_game:
-  jp end_game
-
 
 delete_bitmap:
   push bc
@@ -373,17 +381,10 @@ delete_row_loop:
 high_score_value:
         defw $00
 
-
-;hold for a brief moment
-
-    
-
 ;Lock the program in a loop which lasts forever
 forever_loop:
   jp forever_loop
 
-  
-  
 trex_stand:
         ;; ROW 1
         defb $00, $00, $00
@@ -606,4 +607,3 @@ cact2_4:
         defb $03, $c0, $00
         defb $03, $c0, $00
         defb $03, $c0, $00
-  
