@@ -1,6 +1,4 @@
-;; 1st part of animation
 cact2_1:
-        defb 24, 3
         ;; ROW 1
         defb $00, $06, $00
         defb $00, $0f, $00
@@ -18,12 +16,12 @@ cact2_1:
         defb $03, $cf, $38
         defb $03, $cf, $38
         defb $03, $cf, $38
+        defb $03, $ff, $f8
         defb $01, $ff, $f0
-        defb $00, $ff, $e0
         
         ;; ROW 3
         defb $00, $7f, $c0
-        defb $00, $3f, $00
+        defb $00, $0f, $00
         defb $00, $0f, $00
         defb $00, $0f, $00
         defb $00, $0f, $00
@@ -33,7 +31,6 @@ cact2_1:
 
 ;; 2nd part of animation
 cact2_2:
-        defb 24, 3
         ;; ROW 1
         defb $00, $18, $00
         defb $00, $3c, $00
@@ -51,12 +48,12 @@ cact2_2:
         defb $0f, $3c, $e0
         defb $0f, $3c, $e0
         defb $0f, $3c, $e0
+        defb $0f, $ff, $e0
         defb $07, $ff, $c0
-        defb $03, $ff, $80
         
         ;; ROW 3
         defb $01, $ff, $00
-        defb $00, $fc, $00
+        defb $00, $3c, $00
         defb $00, $3c, $00
         defb $00, $3c, $00
         defb $00, $3c, $00
@@ -68,7 +65,6 @@ cact2_2:
 
 ;; 3rd part of animation
 cact2_3:
-        defb 24, 3
         ;; ROW 1
         defb $00, $60, $00
         defb $00, $f0, $00
@@ -86,12 +82,12 @@ cact2_3:
         defb $3c, $f3, $80
         defb $3c, $f3, $80
         defb $3c, $f3, $80
+        defb $3f, $ff, $80
         defb $1f, $ff, $00
-        defb $0f, $fe, $00
         
         ;; ROW 3
         defb $07, $fc, $00
-        defb $03, $f0, $00
+        defb $00, $f0, $00
         defb $00, $f0, $00
         defb $00, $f0, $00
         defb $00, $f0, $00
@@ -102,7 +98,6 @@ cact2_3:
         
 ;; 4th part of animation
 cact2_4:
-        defb 24, 3
         ;; ROW 1
         defb $01, $80, $00
         defb $03, $c0, $00
@@ -120,12 +115,12 @@ cact2_4:
         defb $f3, $ce, $00
         defb $f3, $ce, $00
         defb $f3, $ce, $00
-        defb $f7, $fc, $00
-        defb $3f, $f8, $00
+        defb $ff, $fe, $00
+        defb $7f, $fc, $00
         
-        ;; ROW 3
+        ;; 
         defb $1f, $f0, $00
-        defb $0f, $c0, $00
+        defb $03, $c0, $00
         defb $03, $c0, $00
         defb $03, $c0, $00
         defb $03, $c0, $00
