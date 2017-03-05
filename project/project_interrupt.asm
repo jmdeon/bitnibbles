@@ -47,8 +47,6 @@ GAME_END:
     jp start
 
 draw_end_screen:
-   ld a, 0
-   call $229b
    ret
 
 setup:
@@ -60,8 +58,6 @@ setup:
     inc hl
     ld (hl), b
 
-    
-    
     ld a, $fe
     ld i, a
     ld bc, $0100
@@ -77,7 +73,7 @@ setup:
    
 
 pos: 
-    defb 240
+    defb 232
   
 cact_count:
     defb 0
@@ -104,10 +100,12 @@ draw_cactus:
     ld a, (hl)
     cp 3
     jp z, reset_cact_count
+    ld a, (hl)
     inc a
     ld (hl), a
     ret
 reset_cact_count:
+    ld hl, cact_count
     ld (hl), 0
     ret
     
@@ -121,16 +119,22 @@ cact_1:
   
   ld hl, pos
   ld a, (hl)
-  cp 16
+  cp 24
   jp z, reset_cact_pos
-  sub a, 8
+  ld hl, pos
+  ld a, (hl)
+  sub 8
+  ld (hl), a
   jp pos_end
 reset_cact_pos:
-  ld a, 240
-pos_end:
+  ld a, 232
   ld hl, pos
   ld (hl), a
+pos_end:
+
   
+  ld hl, pos
+  ld a, (hl)
   ld b, 60
   ld c, a
   ld hl, cact2_1
@@ -247,8 +251,9 @@ set_all_white:
   ldir         ;;Loads remaning attribute bytes with $38
 set_pixels_white:
   ld hl, $4000
-  ld de, $4001
+  ld de, $4000
   ld (hl), 0
+  inc e
   ld bc, $17ff
   ldir
   ret
@@ -262,7 +267,7 @@ draw_dino_init:
   call draw_bitmap ;;Draw the dino
   
   ld b, 60
-  ld c, 240
+  ld c, 232
   ld hl, cact2_4
   call draw_bitmap
   ret
@@ -286,7 +291,7 @@ pause_inner_loop:
   ld a, (hl)   ;;Load last pressed key from keyboard
   cp $0        ;;Check if it hasn't been pressed yet
   jr z, pause_inner_loop ;;Loop back if it hasn't been touched
-  cp 0x30                ;;Did they push spacebar?
+  cp $30                ;;Did they push spacebar?
   jr z, pause_exit       ;;if they pushed spacebar, exit the pause loop
   jp pause_loop_spacebar ;;if they didn't push spacebar, return back to the pause loop
   jp pause_exit
@@ -303,8 +308,8 @@ pause_exit:
 ;assume hl holds bitmap addr 
 ;assume bc holds x,y
 draw_bitmap:
-  ;ld a, $7    ;;set border to white
-  ;call $229b
+  ld a, $0    ;;set border to black
+  call $229b
   push bc
   exx
   pop bc   ;bc' has x,y
@@ -347,8 +352,8 @@ done_setting:
   jp nz, outer_loop
   pop bc
 
-  ;ld a, $38    ;;set back
-  ;call $229b
+  ld a, $7    ;;set back
+  call $229b
   ld hl, end_game_flag
   ld a, $ff
   xor (hl)
@@ -366,6 +371,8 @@ end_game_flag:
   defb $00
 
 delete_bitmap:
+  ld a, $3    ;;set border to purple
+  call $229b
   push bc
   exx
   pop bc   ;bc' has x,y
@@ -403,6 +410,8 @@ delete_row_loop:
 
   jp nz, delete_outer_loop
   pop bc
+  ld a, $7    ;;set back
+  call $229b
   ret
 
 
