@@ -7,6 +7,9 @@ start:
   call pause_loop_spacebar
   call setup
   
+  
+start_loop:
+    jp start_loop
  
 
     
@@ -25,18 +28,18 @@ GAME_LOOP:
     ld hl, counter_1            ;Load counter location for frames
     ld a, (hl)                  ;Load counter
     cp $0                       ;Compare counter to zero 
-    call z, jump_iterate       ;Draw dinosaur if counter is zero
+    call z, jump_iterate        ;Draw dinosaur if counter is zero
     ld hl, counter_1            ;Load counter
     ld a, (hl)                  ;Load counter
     cp $2                       ;Maximum frames
     jp z, reset_counter         ;If frame reached, reset counter
     inc (hl)                    ;Increment counter because max frame not reached
-    jp frame_end_loop           ;Skip reset counter
+    jp frame_end                ;Skip reset counter
 reset_counter:
     ld (hl), $0                 ;Reset counter
-frame_end_loop:
+frame_end:
     ei                          ;Enable interrupts
-    jp frame_end_loop           ;Loop until next interrupt is fired
+    ret
     
 
 ;Initalize and draw the Trex in its starting position
