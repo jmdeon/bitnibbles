@@ -14,22 +14,22 @@ start_loop:
 
     
 ;Counter for frame interrupts    
-counter_1:
+counter:
     defb $0
   
   
 ;Main game loop, choses what to draw in each frame
 GAME_LOOP:
     di                          ;Disable interrupts
-    ld hl, counter_1            ;Load counter location for frames
+    ld hl, counter              ;Load counter location for frames
     ld a, (hl)                  ;Load counter
     cp $0                       ;Compare counter to zero 
     call nz, draw_cactus        ;Draw cactus if counter not zero, allows dinosaur to be drawn
-    ld hl, counter_1            ;Load counter location for frames
+    ld hl, counter              ;Load counter location for frames
     ld a, (hl)                  ;Load counter
     cp $0                       ;Compare counter to zero 
     call z, jump_iterate        ;Draw dinosaur if counter is zero
-    ld hl, counter_1            ;Load counter
+    ld hl, counter              ;Load counter
     ld a, (hl)                  ;Load counter
     cp $2                       ;Maximum frames
     jp z, reset_counter         ;If frame reached, reset counter
@@ -39,6 +39,7 @@ reset_counter:
     ld (hl), $0                 ;Reset counter
 frame_end:
     ei                          ;Enable interrupts
+    call $0038                  ;Call builtin interrupt to grab keyboard
     ret
     
 
@@ -122,13 +123,11 @@ draw_cactus:
     ld a, (hl)
     cp 1                    ;Check if counter is at maximum position
     jp z, reset_cact_count  ;If so, reset cactus counter
-    ld a, (hl)              ;If not, load again (redundant?)
-    inc a                   ;Increment
-    ld (hl), a              ;Load back
-    ret                     ;Return
-reset_cact_count:
-    ld hl, cact_count       ;Load counter    
+    inc (hl)                ;Increment
+    jp cact_fin
+reset_cact_count:  
     ld (hl), 0              ;Reset to zero
+cact_fin:
     ret
     
     
@@ -148,16 +147,13 @@ cact_1:
   
   ld hl, pos            ;Load X position location
   ld a, (hl)            ;Load X position into a
-  cp 24                 ;Lowest X position on screen
+  cp 0                  ;Lowest X position on screen
   jp z, reset_cact_pos  ;If there, reset position
-  ld hl, pos            ;Load position location
-  ld a, (hl)            ;Load position into a
   sub 8                 ;Subtract 8 to move 8 bits left
   ld (hl), a            ;Store result into position
   jp pos_end            ;Skip reloading position
 reset_cact_pos:
-  ld a, 232             ;Load maximum X location into position
-  ld hl, pos            ;Load position location    
+  ld a, 232             ;Load maximum X location into position 
   ld (hl), a            ;Store new position
 pos_end:
 
