@@ -57,24 +57,19 @@ draw_end_screen:
 
    
 ;Setup for interrupt handler   
+;
 setup:
-    ld hl, $fdfd        
-    ld bc, GAME_LOOP
-    ld (hl), $c3
-    inc hl
-    ld (hl), c 
-    inc hl
-    ld (hl), b
-
-    ld a, $fe
-    ld i, a
-    ld bc, $0100
-    ld h, a
-    ld l, c
-    ld d, a
-    ld e, b
-    ld (hl), $fd
-    ldir
+    ld hl, $fff4        ;Store 'jp GAME_LOOP' at $fff4
+    ld bc, GAME_LOOP    ;Grab GAME_LOOP Address
+    ld (hl), $c3        ;Store 'jp'
+    inc hl              ;Move 1 byte to the right
+    ld (hl), c          ;Store first byte of address
+    inc hl              ;Move 1 byte to the right
+    ld (hl), b          ;Store second byte of address
+    ld hl, $ffff        ;Store '$18' at $ffff, causing wrap around
+    ld (hl), $18        ;Store '$18'
+    ld a, $39           ;Load '$39' in I to load '$ffff' from $3900 to $39ff
+    ld i, a             ;Load a into I
     
     im 2
     ret
