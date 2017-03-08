@@ -12,30 +12,34 @@ start:
 loop1:
     jp loop1
 
+    
+;Counter for frame interrupts    
 counter:
     defb 0
   
+  
+;Main game loop, choses what to draw in each frame
 GAME_LOOP:
-    di
-    ld hl, counter
-    ld a, (hl)
-    cp 0
-    call nz, draw_cactus
-    ld hl, counter
-    ld a, (hl)
-    cp 0
-    call z, jump_iterate
-    ld hl, counter
-    ld a, (hl)
-    cp 2
-    jp z, reset_counter
-    inc (hl)
-    jp frame_end_loop
+    di                      ;Disable interrupts
+    ld hl, counter          ;Load counter location for frames
+    ld a, (hl)              ;Load counter
+    cp 0                    ;Compare counter to zero 
+    call nz, draw_cactus    ;Draw cactus if counter not zero, allows dinosaur to be drawn
+    ld hl, counter          ;Load counter location for frames
+    ld a, (hl)              ;Load counter
+    cp 0                    ;Compare counter to zero 
+    call z, jump_iterate    ;Draw dinosaur if counter is zero
+    ld hl, counter          ;Load counter
+    ld a, (hl)              ;Load counter
+    cp 2                    ;Maximum frames
+    jp z, reset_counter     ;If frame reached, reset counter
+    inc (hl)                ;Increment counter because max frame not reached
+    jp frame_end_loop       ;Skip reset counter
 reset_counter:
-    ld (hl), 0
+    ld (hl), 0              ;Reset counter
 frame_end_loop:
-    ei
-    jp frame_end_loop
+    ei                      ;Enable interrupts
+    jp frame_end_loop       ;Loop until next interrupt is fired
     
 
 GAME_END:
@@ -51,8 +55,10 @@ GAME_END:
 draw_end_screen:
    ret
 
+   
+;Setup for interrupt handler   
 setup:
-    ld hl, $fdfd
+    ld hl, $fdfd        
     ld bc, GAME_LOOP
     ld (hl), $c3
     inc hl
@@ -73,81 +79,89 @@ setup:
     im 2
     ret
    
-
-pos: 
-    defb 232
-  
+;Counter of cactus position
 cact_count:
     defb 0
   
+;Handle drawing cactus
 draw_cactus:
-    ld hl, cact_count
-    ld a, (hl)
-    cp 0
-    call z, cact_1
-    ld hl, cact_count
-    ld a, (hl)
-    cp 1
-    call z, cact_3
+    ld hl, cact_count       ;Load cactus position
+    ld a, (hl)              ;Load cactus position
+    cp 0                    ;Check if first position
+    call z, cact_1          ;If so, draw cactus 1
+    ld hl, cact_count       ;Load cactus position
+    ld a, (hl)              ;Load cactus position
+    cp 1                    ;Check if second position
+    call z, cact_2          ;If so, draw cactus 2
     
-    ld hl, cact_count
+    
+    ;Cactus counter reset logic
+    ld hl, cact_count       ;Load cactus counter
     ld a, (hl)
-    cp 1
-    jp z, reset_cact_count
-    ld a, (hl)
-    inc a
-    ld (hl), a
-    ret
+    cp 1                    ;Check if counter is at maximum position
+    jp z, reset_cact_count  ;If so, reset cactus counter
+    ld a, (hl)              ;If not, load again (redundant?)
+    inc a                   ;Increment
+    ld (hl), a              ;Load back
+    ret                     ;Return
 reset_cact_count:
-    ld hl, cact_count
-    ld (hl), 0
+    ld hl, cact_count       ;Load counter    
+    ld (hl), 0              ;Reset to zero
     ret
     
+    
+;Maximum position of cactus on right side of the screen   
+pos: 
+    defb 232
+    
+
+;Draw cactus 1, delete cactus 2    
 cact_1:
 
-  ld b, 60
-  ld hl, pos
-  ld c, (hl)
-  ld hl, cact2_3
-  call delete_bitmap
+  ld b, 60              ;Load Y Position of cactus 2 into b
+  ld hl, pos            ;Load X position location
+  ld c, (hl)            ;Load X position into c
+  ld hl, cact2_2        ;Load cactus 2 bitmap
+  call delete_bitmap    ;Delete cactus 2
   
-  ld hl, pos
-  ld a, (hl)
-  cp 24
-  jp z, reset_cact_pos
-  ld hl, pos
-  ld a, (hl)
-  sub 8
-  ld (hl), a
-  jp pos_end
+  ld hl, pos            ;Load X position location
+  ld a, (hl)            ;Load X position into a
+  cp 24                 ;Lowest X position on screen
+  jp z, reset_cact_pos  ;If there, reset position
+  ld hl, pos            ;Load position location
+  ld a, (hl)            ;Load position into a
+  sub 8                 ;Subtract 8 to move 8 bits left
+  ld (hl), a            ;Store result into position
+  jp pos_end            ;Skip reloading position
 reset_cact_pos:
-  ld a, 232
-  ld hl, pos
-  ld (hl), a
+  ld a, 232             ;Load maximum X location into position
+  ld hl, pos            ;Load position location    
+  ld (hl), a            ;Store new position
 pos_end:
 
   
-  ld hl, pos
-  ld a, (hl)
-  ld b, 60
-  ld c, a
-  ld hl, cact2_1
-  call draw_bitmap
+  ld hl, pos            ;Load X position location
+  ld c, (hl)            ;Load X position into c                
+  ld b, 60              ;Load Y position into b
+  ld hl, cact2_1        ;Load cactus 1 bitmap
+  call draw_bitmap      ;Draw cactus 1 bitmap
   ret
   
-cact_3:
-
-  ld b, 60
-  ld hl, pos
-  ld c, (hl)
-  ld hl, cact2_1
-  call delete_bitmap
   
-  ld b, 60
-  ld hl, pos
-  ld c, (hl)
-  ld hl, cact2_3
-  call draw_bitmap
+;Delete cactus 1, draw cactus 2
+cact_2:
+
+  ld b, 60              ;Load Y position into b
+  ld hl, pos            ;Load X position location
+  ld c, (hl)            ;Load X position into c
+  ld hl, cact2_1        ;Load Cactus 1 bitmap
+  call delete_bitmap    ;Delete cactus 1 bitmap
+  
+  ld b, 60              ;Load Y position into b
+  ld hl, pos            ;Load X position location
+  ld c, (hl)            ;Load X position into c
+  ld hl, cact2_2        ;Load Cactus 2 bitmap
+  call draw_bitmap      ;Draw Cactus 2 bitmap
   ret
   
   
@@ -227,13 +241,13 @@ set_pixels_white:
 ;Initalize and draw the Trex in its starting position
 draw_dino_init:
   ld hl, trex_stand
-  ld c, 16     ;;X coordinate of top-left of initlal trex posiiton
+  ld c, 16     ;;X coordinate of top-left of initlal trex position
   ld b, 60     ;;Y coordinate of top-left of initial trex position
   call draw_bitmap ;;Draw the dino
   
   ld b, 60
   ld c, 232
-  ld hl, cact2_3
+  ld hl, cact2_2
   call draw_bitmap
   ret
 
@@ -506,7 +520,7 @@ cact2_1:
 
 
 ;; 3rd part of animation
-cact2_3:
+cact2_2:
         ;; ROW 1
         defb $00, $60, $00
         defb $00, $f0, $00
