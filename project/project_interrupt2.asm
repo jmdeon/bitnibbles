@@ -88,11 +88,19 @@ draw_cactus:
     ld hl, cact_count
     ld a, (hl)
     cp 1
+    call z, cact_2
+    ld hl, cact_count
+    ld a, (hl)
+    cp 2
     call z, cact_3
+    ld hl, cact_count
+    ld a, (hl)
+    cp 3
+    call z, cact_4
     
     ld hl, cact_count
     ld a, (hl)
-    cp 1
+    cp 3
     jp z, reset_cact_count
     ld a, (hl)
     inc a
@@ -108,7 +116,7 @@ cact_1:
   ld b, 60
   ld hl, pos
   ld c, (hl)
-  ld hl, cact2_3
+  ld hl, cact2_4
   call delete_bitmap
   
   ld hl, pos
@@ -135,12 +143,27 @@ pos_end:
   call draw_bitmap
   ret
   
-cact_3:
+cact_2:
 
   ld b, 60
   ld hl, pos
   ld c, (hl)
   ld hl, cact2_1
+  call delete_bitmap
+
+  ld b, 60
+  ld hl, pos
+  ld c, (hl)
+  ld hl, cact2_2
+  call draw_bitmap
+  ret
+  
+cact_3:
+
+  ld b, 60
+  ld hl, pos
+  ld c, (hl)
+  ld hl, cact2_2
   call delete_bitmap
   
   ld b, 60
@@ -150,6 +173,20 @@ cact_3:
   call draw_bitmap
   ret
   
+cact_4:
+  
+  ld b, 60
+  ld hl, pos
+  ld c, (hl)
+  ld hl, cact2_3
+  call delete_bitmap
+  
+  ld b, 60
+  ld hl, pos
+  ld c, (hl)
+  ld hl, cact2_4
+  call draw_bitmap
+  ret
   
 jmp_positions:
   defb 60, 70, 80, 100, 105, 109, 109, 105, 100, 80, 70, 60
@@ -233,7 +270,7 @@ draw_dino_init:
   
   ld b, 60
   ld c, 232
-  ld hl, cact2_3
+  ld hl, cact2_4
   call draw_bitmap
   ret
 
@@ -272,8 +309,8 @@ pause_exit:
 ;assume hl holds bitmap addr 
 ;assume bc holds x,y
 draw_bitmap:
-  ;ld a, $0    ;;set border to black
-  ;call $229b
+  ld a, $0    ;;set border to black
+  call $229b
   push bc
   exx
   pop bc   ;bc' has x,y
@@ -316,8 +353,8 @@ done_setting:
   jp nz, outer_loop
   pop bc
 
-  ;ld a, $7    ;;set back
-  ;call $229b
+  ld a, $7    ;;set back
+  call $229b
   ld hl, end_game_flag
   ld a, $ff
   xor (hl)
@@ -335,8 +372,8 @@ end_game_flag:
   defb $00
 
 delete_bitmap:
-  ;ld a, $3    ;;set border to purple
-  ;call $229b
+  ld a, $3    ;;set border to purple
+  call $229b
   push bc
   exx
   pop bc   ;bc' has x,y
@@ -374,8 +411,8 @@ delete_row_loop:
 
   jp nz, delete_outer_loop
   pop bc
-  ;ld a, $7    ;;set back
-  ;call $229b
+  ld a, $7    ;;set back
+  call $229b
   ret
 
 
@@ -503,7 +540,39 @@ cact2_1:
         defb $00, $0f, $00
         defb $00, $0f, $00
 
-
+;; 2nd part of animation
+cact2_2:
+        ;; ROW 1
+        defb $00, $18, $00
+        defb $00, $3c, $00
+        defb $00, $3c, $00
+        defb $00, $3c, $00
+        defb $00, $3c, $00
+        defb $06, $3c, $40
+        defb $0f, $3c, $e0
+        defb $0f, $3c, $e0
+        
+        ;; ROW 2
+        defb $0f, $3c, $e0
+        defb $0f, $3c, $e0
+        defb $0f, $3c, $e0
+        defb $0f, $3c, $e0
+        defb $0f, $3c, $e0
+        defb $0f, $3c, $e0
+        defb $0f, $ff, $e0
+        defb $07, $ff, $c0
+        
+        ;; ROW 3
+        defb $01, $ff, $00
+        defb $00, $3c, $00
+        defb $00, $3c, $00
+        defb $00, $3c, $00
+        defb $00, $3c, $00
+        defb $00, $3c, $00
+        defb $00, $3c, $00
+        defb $00, $3c, $00
+        
+        
 
 ;; 3rd part of animation
 cact2_3:
@@ -538,3 +607,34 @@ cact2_3:
         defb $00, $f0, $00
         
         
+;; 4th part of animation
+cact2_4:
+        ;; ROW 1
+        defb $01, $80, $00
+        defb $03, $c0, $00
+        defb $03, $c0, $00
+        defb $03, $c0, $00
+        defb $03, $c0, $00
+        defb $63, $c4, $00
+        defb $f3, $ce, $00
+        defb $f3, $ce, $00
+        
+        ;; ROW 2
+        defb $f3, $ce, $00
+        defb $f3, $ce, $00
+        defb $f3, $ce, $00
+        defb $f3, $ce, $00
+        defb $f3, $ce, $00
+        defb $f3, $ce, $00
+        defb $ff, $fe, $00
+        defb $7f, $fc, $00
+        
+        ;; 
+        defb $1f, $f0, $00
+        defb $03, $c0, $00
+        defb $03, $c0, $00
+        defb $03, $c0, $00
+        defb $03, $c0, $00
+        defb $03, $c0, $00
+        defb $03, $c0, $00
+        defb $03, $c0, $00
