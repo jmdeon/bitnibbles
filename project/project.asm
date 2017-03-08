@@ -2,87 +2,143 @@
 
 start:
   call set_all_white 
-  call init_high_score
   call draw_dino_init
   call draw_no_internet
   call pause_loop_spacebar
-GAME_LOADING:
-  ;call animate_landscape
-  ;call draw_high_score
+  call setup
   ld hl, jmp_index
   ld (hl), 0
+  
+loop1:
+    jp loop1
+
+counter:
+    defb 0
+  
 GAME_LOOP:
-    call jump_iterate
-    call hold
-    call cact_1
-    call hold
-    call cact_2
-    call hold
-    call cact_3
-    call hold
-    call cact_4
-    call hold
-    call cact_5
-    jp GAME_LOOP
+    di
+    ld hl, counter
+    ld a, (hl)
+    cp 0
+    call nz, draw_cactus
+    ld hl, counter
+    ld a, (hl)
+    cp 0
+    call z, jump_iterate
+    ld hl, counter
+    ld a, (hl)
+    cp 2
+    jp z, reset_counter
+    inc (hl)
+    jp frame_end_loop
+reset_counter:
+    ld (hl), 0
+frame_end_loop:
+    ei
+    jp frame_end_loop
+    
 
 GAME_END:
-   call draw_end_screen
-   ld hl, end_game_flag
-   ld (hl), $00
-   ld hl, pos
-   ld (hl), $a0
-   call pause_loop_spacebar
-   jp start
+    call draw_end_screen
+    ld hl, end_game_flag
+    ld (hl), $00
+    ld hl, pos
+    ld (hl), $a0
+    di
+    call pause_loop_spacebar
+    jp start
 
 draw_end_screen:
-   ld a, 0
-   call $229b
    ret
 
-hold:
-    inc a
-    ld bc,$02ff         ; max waiting time. Why?
-hold_loop:
-    dec bc              ; Need to use bc? Use another register?
-    ld a,b
-    or c
-    jr nz, hold_loop
+setup:
+    ld hl, $fdfd
+    ld bc, GAME_LOOP
+    ld (hl), $c3
+    inc hl
+    ld (hl), c 
+    inc hl
+    ld (hl), b
+
+    ld a, $fe
+    ld i, a
+    ld bc, $0100
+    ld h, a
+    ld l, c
+    ld d, a
+    ld e, b
+    ld (hl), $fd
+    ldir
+    
+    im 2
     ret
+   
 
-pos: defb $a0
-
-dino_1:
-  ld hl, trex_right_up
-  ld b, 60
-  ld c, 16
-  call draw_bitmap
-  ret
+pos: 
+    defb 232
   
-dino_2:
+cact_count:
+    defb 0
   
-  ld hl, trex_right_up
-  ld b, 60
-  ld c, 16
-  call delete_bitmap
-  
-  ld hl, trex_left_up
-  ld b, 60
-  ld c, 16
-  call draw_bitmap
-  ret
-
-dino_3:
-  
-  ld hl, trex_left_up
-  ld b, 60
-  ld c, 16
-  call delete_bitmap
-  ret
-  
+draw_cactus:
+    ld hl, cact_count
+    ld a, (hl)
+    cp 0
+    call z, cact_1
+    ld hl, cact_count
+    ld a, (hl)
+    cp 1
+    call z, cact_2
+    ld hl, cact_count
+    ld a, (hl)
+    cp 2
+    call z, cact_3
+    ld hl, cact_count
+    ld a, (hl)
+    cp 3
+    call z, cact_4
+    
+    ld hl, cact_count
+    ld a, (hl)
+    cp 3
+    jp z, reset_cact_count
+    ld a, (hl)
+    inc a
+    ld (hl), a
+    ret
+reset_cact_count:
+    ld hl, cact_count
+    ld (hl), 0
+    ret
+    
 cact_1:
+
   ld b, 60
   ld hl, pos
   ld c, (hl)
+  ld hl, cact2_4
+  call delete_bitmap
+  
+  ld hl, pos
+  ld a, (hl)
+  cp 24
+  jp z, reset_cact_pos
+  ld hl, pos
+  ld a, (hl)
+  sub 8
+  ld (hl), a
+  jp pos_end
+reset_cact_pos:
+  ld a, 232
+  ld hl, pos
+  ld (hl), a
+pos_end:
+
+  
+  ld hl, pos
+  ld a, (hl)
+  ld b, 60
+  ld c, a
   ld hl, cact2_1
   call draw_bitmap
   ret
@@ -132,20 +188,6 @@ cact_4:
   call draw_bitmap
   ret
   
-cact_5:
-  
-  ld b, 60
-  ld hl, pos
-  ld c, (hl)
-  ld hl, cact2_4
-  call delete_bitmap
-  
-  ld hl, pos
-  ld a, (hl)
-  sub a, 8
-  ld (hl), a
-  ret
-
 jmp_positions:
   defb 60, 70, 80, 100, 105, 109, 109, 105, 100, 80, 70, 60
 
@@ -157,11 +199,11 @@ jump_iterate:
   ld b, (hl)              ;Load the jump index value into b
   ld a, 11                 ;a is the number of positions in the jump array
   cp b              
-  jp nz, jmp_index_not_8  ;if jump index is not 8, jump forward and check if it's 0
+  jp nz, jmp_index_not_11  ;if jump index is not 8, jump forward and check if it's 0
   ld b, 0                 ;if jump index is 8, reset it
   ld (hl), b              ;save the index value and exit
   jp jmp_end     
-jmp_index_not_8:
+jmp_index_not_11:
   ld a, 0                 
   cp b                    
   jp nz, jmp_next_index   ;if the index is not zero, jump forward and increment
@@ -169,7 +211,7 @@ jmp_index_not_8:
   ld a, (hl)              ;load in the last pressed key from the keyboard to a
   cp $30                  
   jp nz, jmp_end          ;if the last key wasn't a spacebar, exit. Else inc
-  ld (hl), 0
+  ld (hl), 0 ;if the last key wasn't a spacebar, exit. Else inc
   ld hl, 497
   ld de, 20
   call 949
@@ -218,9 +260,6 @@ set_pixels_white:
   ldir
   ret
 
-;Initalize the high score value in memory as 0
-init_high_score:
-    ret
 
 ;Initalize and draw the Trex in its starting position
 draw_dino_init:
@@ -228,6 +267,11 @@ draw_dino_init:
   ld c, 16     ;;X coordinate of top-left of initlal trex posiiton
   ld b, 60     ;;Y coordinate of top-left of initial trex position
   call draw_bitmap ;;Draw the dino
+  
+  ld b, 60
+  ld c, 232
+  ld hl, cact2_4
+  call draw_bitmap
   ret
 
 ;Draw the no internet string at the bottom of the screen
@@ -249,37 +293,24 @@ pause_inner_loop:
   ld a, (hl)   ;;Load last pressed key from keyboard
   cp $0        ;;Check if it hasn't been pressed yet
   jr z, pause_inner_loop ;;Loop back if it hasn't been touched
-  cp 0x30                ;;Did they push spacebar?
+  cp $30                ;;Did they push spacebar?
   jr z, pause_exit       ;;if they pushed spacebar, exit the pause loop
   jp pause_loop_spacebar ;;if they didn't push spacebar, return back to the pause loop
   jp pause_exit
 pause_exit:
   ret
 
-;Animate the landscape once the user leaves the welcome screen
-animate_landscape:
-  ret
-
-;Draw the current highscore onto the screen
-draw_high_score:
-  ld a, $2
-  call $1601
-  ld de, high_score_example
-  ld bc, $4
-  call $203c
-  ret
-high_score_example:
-  defb '0000'
 
 ;hl bitmap addr
 ;b   loop counter
 ;bc' x,y
 ;hl' pixel byte addr
 ;d' draw byte
-
 ;assume hl holds bitmap addr 
 ;assume bc holds x,y
 draw_bitmap:
+  ld a, $0    ;;set border to black
+  call $229b
   push bc
   exx
   pop bc   ;bc' has x,y
@@ -322,6 +353,8 @@ done_setting:
   jp nz, outer_loop
   pop bc
 
+  ld a, $7    ;;set back
+  call $229b
   ld hl, end_game_flag
   ld a, $ff
   xor (hl)
@@ -339,6 +372,8 @@ end_game_flag:
   defb $00
 
 delete_bitmap:
+  ld a, $3    ;;set border to purple
+  call $229b
   push bc
   exx
   pop bc   ;bc' has x,y
@@ -347,7 +382,7 @@ delete_bitmap:
   ld b, 24
   push bc
 delete_outer_loop:
-  
+
   exx
   push bc  ;save current y coord
   call $22aa   ;hl' holds pixel-byte addr of c,b
@@ -360,7 +395,7 @@ delete_row_loop:
   push de
   exx
   pop de
-  
+
   ld a,d
   xor (hl)
   ld (hl), a ;draw byte
@@ -376,14 +411,10 @@ delete_row_loop:
 
   jp nz, delete_outer_loop
   pop bc
+  ld a, $7    ;;set back
+  call $229b
   ret
 
-high_score_value:
-        defw $00
-
-;Lock the program in a loop which lasts forever
-forever_loop:
-  jp forever_loop
 
 trex_stand:
         ;; ROW 1
