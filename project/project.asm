@@ -78,19 +78,12 @@ GAME_END:
 
 draw_end_screen:
    ret
-
-   
-test_loop:
-    ;call draw_cactus
-    ei
-loop1:
-    jp loop1
    
 ;Setup for interrupt handler   
 ;
 setup:
     ld hl, $fff4        ;Store 'jp GAME_LOOP' at $fff4
-    ld bc, test_loop    ;Grab GAME_LOOP Address
+    ld bc, GAME_LOOP    ;Grab GAME_LOOP Address
     ld (hl), $c3        ;Store 'jp'
     inc hl              ;Move 1 byte to the right
     ld (hl), c          ;Store first byte of address
