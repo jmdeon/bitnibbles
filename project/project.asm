@@ -6,42 +6,66 @@ start:
   call draw_no_internet
   call pause_loop_spacebar
   call setup
-  ld hl, jmp_index
-  ld (hl), 0
   
-loop1:
-    jp loop1
+ 
 
     
 ;Counter for frame interrupts    
-counter:
-    defb 0
+counter_1:
+    defb $0
   
   
 ;Main game loop, choses what to draw in each frame
 GAME_LOOP:
-    di                      ;Disable interrupts
-    ld hl, counter          ;Load counter location for frames
-    ld a, (hl)              ;Load counter
-    cp 0                    ;Compare counter to zero 
-    call nz, draw_cactus    ;Draw cactus if counter not zero, allows dinosaur to be drawn
-    ld hl, counter          ;Load counter location for frames
-    ld a, (hl)              ;Load counter
-    cp 0                    ;Compare counter to zero 
-    call z, jump_iterate    ;Draw dinosaur if counter is zero
-    ld hl, counter          ;Load counter
-    ld a, (hl)              ;Load counter
-    cp 2                    ;Maximum frames
-    jp z, reset_counter     ;If frame reached, reset counter
-    inc (hl)                ;Increment counter because max frame not reached
-    jp frame_end_loop       ;Skip reset counter
+    di                          ;Disable interrupts
+    ld hl, counter_1            ;Load counter location for frames
+    ld a, (hl)                  ;Load counter
+    cp $0                       ;Compare counter to zero 
+    call nz, draw_cactus        ;Draw cactus if counter not zero, allows dinosaur to be drawn
+    ld hl, counter_1            ;Load counter location for frames
+    ld a, (hl)                  ;Load counter
+    cp $0                       ;Compare counter to zero 
+    call z, jump_iterate       ;Draw dinosaur if counter is zero
+    ld hl, counter_1            ;Load counter
+    ld a, (hl)                  ;Load counter
+    cp $2                       ;Maximum frames
+    jp z, reset_counter         ;If frame reached, reset counter
+    inc (hl)                    ;Increment counter because max frame not reached
+    jp frame_end_loop           ;Skip reset counter
 reset_counter:
-    ld (hl), 0              ;Reset counter
+    ld (hl), $0                 ;Reset counter
 frame_end_loop:
-    ei                      ;Enable interrupts
-    jp frame_end_loop       ;Loop until next interrupt is fired
+    ei                          ;Enable interrupts
+    jp frame_end_loop           ;Loop until next interrupt is fired
     
 
+;Initalize and draw the Trex in its starting position
+draw_dino_init:
+  ld hl, trex_stand
+  ld c, 16     ;;X coordinate of top-left of initlal trex position
+  ld b, 60     ;;Y coordinate of top-left of initial trex position
+  call draw_bitmap ;;Draw the dino
+  
+  ld hl, jmp_index
+  ld (hl), 0
+  
+  ld b, 60
+  ld c, 232
+  ld hl, cact2_2
+  call draw_bitmap
+  ret
+
+;Draw the no internet string at the bottom of the screen
+draw_no_internet:
+  ld a, $1     ;;We are placing this at the bottom, so use channel 1
+  call $1601   ;;Open channel 1
+  ld de, no_internet_string
+  ld bc, $1f   ;;The string is 31 characters
+  call $203c   ;;Call the print routine in the ROM
+  ret
+no_internet_string:
+  defb 'There is no Internet connection'
+    
 GAME_END:
     call draw_end_screen
     ld hl, end_game_flag
@@ -56,11 +80,17 @@ draw_end_screen:
    ret
 
    
+test_loop:
+    ;call draw_cactus
+    ei
+loop1:
+    jp loop1
+   
 ;Setup for interrupt handler   
 ;
 setup:
     ld hl, $fff4        ;Store 'jp GAME_LOOP' at $fff4
-    ld bc, GAME_LOOP    ;Grab GAME_LOOP Address
+    ld bc, test_loop    ;Grab GAME_LOOP Address
     ld (hl), $c3        ;Store 'jp'
     inc hl              ;Move 1 byte to the right
     ld (hl), c          ;Store first byte of address
@@ -72,6 +102,7 @@ setup:
     ld i, a             ;Load a into I
     
     im 2
+    ei
     ret
    
 ;Counter of cactus position
@@ -223,6 +254,8 @@ set_all_white:
   inc e        ;;move to the next attribute byte
   ld bc, $2ff  ;;32 x 24 attr addresses - 1
   ldir         ;;Loads remaning attribute bytes with $38
+  ret
+  
 set_pixels_white:
   ld hl, $4000
   ld de, $4000
@@ -233,43 +266,19 @@ set_pixels_white:
   ret
 
 
-;Initalize and draw the Trex in its starting position
-draw_dino_init:
-  ld hl, trex_stand
-  ld c, 16     ;;X coordinate of top-left of initlal trex position
-  ld b, 60     ;;Y coordinate of top-left of initial trex position
-  call draw_bitmap ;;Draw the dino
-  
-  ld b, 60
-  ld c, 232
-  ld hl, cact2_2
-  call draw_bitmap
-  ret
 
-;Draw the no internet string at the bottom of the screen
-draw_no_internet:
-  ld a, $1     ;;We are placing this at the bottom, so use channel 1
-  call $1601   ;;Open channel 1
-  ld de, no_internet_string
-  ld bc, $1f   ;;The string is 31 characters
-  call $203c   ;;Call the print routine in the ROM
-  ret
-no_internet_string:
-  defb 'There is no Internet connection'
 
 ;Loop which holds until the user presses any button
 pause_loop_spacebar:
   ld hl, $5c08 ;;ULA fills memory address $5c08 with the last pressed key from the keyboard
-  ld (hl), $0  ;;Reset memory position by setting it to zero
+  ld (hl), 0  ;;Reset memory position by setting it to zero
 pause_inner_loop:
+  ld hl, $5c08
   ld a, (hl)   ;;Load last pressed key from keyboard
-  cp $0        ;;Check if it hasn't been pressed yet
+  cp 0        ;;Check if it hasn't been pressed yet
   jr z, pause_inner_loop ;;Loop back if it hasn't been touched
   cp $30                ;;Did they push spacebar?
-  jr z, pause_exit       ;;if they pushed spacebar, exit the pause loop
-  jp pause_loop_spacebar ;;if they didn't push spacebar, return back to the pause loop
-  jp pause_exit
-pause_exit:
+  jp nz, pause_loop_spacebar ;;if they didn't push spacebar, return back to the pause loop
   ret
 
 
