@@ -21,6 +21,10 @@ counter:
 ;Main game loop, choses what to draw in each frame
 GAME_LOOP:
     di                          ;Disable interrupts
+    ld hl, end_game_flag
+    ld a, (hl)
+    cp 0
+    jp nz, frame_end
     ld hl, counter              ;Load counter location for frames
     ld a, (hl)                  ;Load counter
     cp $0                       ;Compare counter to zero 
@@ -38,8 +42,12 @@ GAME_LOOP:
 reset_counter:
     ld (hl), $0                 ;Reset counter
 frame_end:
-    ei                          ;Enable interrupts
+    ld a, $3    ;;set border to purple
+    call $229b
     call $0038                  ;Call builtin interrupt to grab keyboard
+    ld a, $7    ;;set border to purple
+    call $229b
+    ei                          ;Enable interrupts
     ret
     
 
@@ -71,14 +79,20 @@ no_internet_string:
   defb 'There is no Internet connection'
     
 GAME_END:
-    call draw_end_screen
-    ld hl, end_game_flag
-    ld (hl), $00
-    ld hl, pos
-    ld (hl), $a0
-    di
+    im 1
+    ei
     call pause_loop_spacebar
-    jp start
+    call set_pixels_white
+     ld hl, end_game_flag
+    ld (hl), 0
+    ld hl, cact_count
+    ld (hl), 0
+    ld hl, pos
+    ld (hl), 232
+    call draw_no_internet
+    call draw_dino_init
+    call setup
+    jp start_loop
 
 draw_end_screen:
    ret
@@ -94,14 +108,18 @@ setup:
     inc hl              ;Move 1 byte to the right
     ld (hl), b          ;Store second byte of address
     ld hl, $ffff        ;Store '$18' at $ffff, causing wrap around
-    ld (hl), $18        ;Store '$18'
-    ld a, $39           ;Load '$39' in I to load '$ffff' from $3900 to $39ff
+    ld (hl), $18        ;Store '$18' aka 'jr'
+    ld a, $39           ;Load '$39' in I to get '$ffff' from $3900 to $39ff
     ld i, a             ;Load a into I
     
     im 2
     ei
     ret
    
+   
+   
+   
+
 ;Counter of cactus position
 cact_count:
     defb 0
