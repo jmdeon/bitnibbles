@@ -7,11 +7,8 @@ start:
   call pause_loop_spacebar
   call setup
   
-  
 start_loop:
     jp start_loop
- 
-
     
 ;Counter for frame interrupts    
 counter:
@@ -57,10 +54,8 @@ draw_dino_init:
   ld c, 16     ;;X coordinate of top-left of initlal trex position
   ld b, 60     ;;Y coordinate of top-left of initial trex position
   call draw_bitmap ;;Draw the dino
-  
   ld hl, jmp_index
   ld (hl), 0
-  
   ld b, 60
   ld c, 232
   ld hl, cact2_2
@@ -79,6 +74,8 @@ no_internet_string:
   defb 'There is no Internet connection'
     
 GAME_END:
+    ld hl, previous_walking
+    ld (hl), 0
     ld hl, 200
     ld de, 20
     call $3b5  ;Play a sharp tone to signify that the game has ended
@@ -215,8 +212,8 @@ jump_iterate:
   ld b, (hl)              ;Load the jump index value into b
   ld a, 11                 ;a is the number of positions in the jump array
   cp b              
-  jp nz, jmp_index_not_11  ;if jump index is not 8, jump forward and check if it's 0
-  ld b, 0                 ;if jump index is 8, reset it
+  jp nz, jmp_index_not_11  ;if jump index is not 11, jump forward and check if it's 0
+  ld b, 0                 ;if jump index is 11, reset it
   ld (hl), b              ;save the index value and exit
   jp jmp_end     
 jmp_index_not_11:
@@ -226,11 +223,18 @@ jmp_index_not_11:
   ld hl, $5c08          
   ld a, (hl)              ;load in the last pressed key from the keyboard to a
   cp $30                  
-  jp nz, jmp_end          ;if the last key wasn't a spacebar, exit. Else inc
+  jp nz, jmp_walk          ;if the last key wasn't a spacebar, walk the trex. Else inc
   ld (hl), 0
   ld hl, 497
   ld de, 20
   call $3b5               ;Play a tone every time the player jumps
+  call delete_current_walking
+  ld hl, previous_walking
+  ld (hl), 0
+  ld hl, trex_stand
+  ld b, 60
+  ld c, 16
+  call draw_bitmap
   ld hl, jmp_index
   ld b, (hl)
 jmp_next_index:
@@ -246,6 +250,9 @@ jmp_next_index:
   ld hl, trex_stand
   ld c, 16
   call draw_bitmap        ;draw the trex in the new position
+  jp jmp_end
+jmp_walk:
+  call draw_next_walking 
 jmp_end:
   ret
 
@@ -255,6 +262,87 @@ jmp_load_b:   ;Expects b to hold index and will return y position in b
   ld hl, jmp_positions    
   add hl, de              ;increment the pointer to base + index
   ld b, (hl)              ;b = jmp_positions[index]
+  ret
+
+walking_counter:     ;used to determine when to switch to the next leg when walking
+  defb $00
+
+draw_next_walking:
+  ld hl, walking_counter
+  ld b, (hl)            ;load the walking counter
+  ld a, 1               
+  cp b
+  jp nz, reset_walking_counter  ;reset the walking counter every other frame when walking
+  ld hl, previous_walking       ;load the previous position the player was in (stepping position, i.e. which feet were down)
+  ld b, (hl)
+  ld a, 1
+  cp b
+  jp nz, walking_left           ;if the player didn't previously have the left leg up, jump ahead and make the next move have the left leg up 
+walking_right:
+  call delete_current_walking   ;if the player was on the left leg, delete the previous position and draw the trex with the right left up
+  ld hl, trex_right_up
+  ld c, 16
+  ld b, 60
+  call draw_bitmap
+  ld hl, previous_walking
+  ld (hl), 2                     ;set the previous walking position as the right leg up
+  jp save_walking
+walking_left:
+  call delete_current_walking   ;delete the previous walking position and draw with the left leg up
+  ld hl, trex_left_up
+  ld c, 16
+  ld b, 60
+  call draw_bitmap
+  ld hl, previous_walking
+  ld (hl), 1
+  jp save_walking
+reset_walking_counter:
+  ld (hl), 0
+save_walking:
+  ld hl, walking_counter
+  inc (hl)
+  ret
+
+previous_walking:                ;keep track of the previous leg position, 0 = standing, 1 = left leg up, 2 = right leg up
+  defb $00
+
+delete_current_walking:
+  ld hl, previous_walking
+  ld b, (hl)
+  ld a, 0
+  cp b
+  call z, delete_standing       ;if the previous position was 0, delete a standing trex
+  ld hl, previous_walking
+  ld b, (hl)
+  ld a, 1
+  cp b
+  call z, delete_left_foot      ;if the previous position was 1, delete a left leg up trex
+  ld hl, previous_walking
+  ld b, (hl)
+  ld a, 2
+  cp b
+  call z, delete_right_foot     ;if the previous position was 2, delete a right leg trex
+  ret
+
+delete_standing:
+  ld hl, trex_stand
+  ld c, 16
+  ld b, 60
+  call delete_bitmap
+  ret
+
+delete_left_foot:
+  ld hl, trex_left_up
+  ld c, 16
+  ld b, 60
+  call delete_bitmap
+  ret
+
+delete_right_foot:
+  ld hl, trex_right_up
+  ld c, 16
+  ld b, 60
+  call delete_bitmap
   ret
   
 ;Sets the entire screen (border and center screen) to be white (unhighlighted)
