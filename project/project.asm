@@ -79,6 +79,9 @@ no_internet_string:
   defb 'There is no Internet connection'
     
 GAME_END:
+    ld hl, 200
+    ld de, 20
+    call $3b5  ;Play a sharp tone to signify that the game has ended
     im 1
     ei
     call pause_loop_spacebar
@@ -224,13 +227,13 @@ jmp_index_not_11:
   ld a, (hl)              ;load in the last pressed key from the keyboard to a
   cp $30                  
   jp nz, jmp_end          ;if the last key wasn't a spacebar, exit. Else inc
-  ld (hl), 0 ;if the last key wasn't a spacebar, exit. Else inc
+  ld (hl), 0
   ld hl, 497
   ld de, 20
-  call 949
+  call $3b5               ;Play a tone every time the player jumps
   ld hl, jmp_index
   ld b, (hl)
-jmp_next_index: ;THIS IS WEHERE IT GETS REALLY WEIRD
+jmp_next_index:
   call jmp_load_b         ;b = jmp_positions[old_index]
   ld hl, trex_stand
   ld c, 16
