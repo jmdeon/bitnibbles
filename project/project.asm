@@ -89,8 +89,13 @@ GAME_END:
     ld (hl), 0
     ld hl, pos
     ld (hl), 232
+    ld hl, $5c8a
+    ld (hl), $01
+    inc hl
+    ld (hl), $18
     call draw_no_internet
     call draw_dino_init
+    call pause_loop_spacebar
     call setup
     jp start_loop
 
