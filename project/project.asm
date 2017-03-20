@@ -2,6 +2,7 @@
 
 start:
   call set_all_white 
+  call draw_land
   call draw_dino_init
   call draw_no_internet
   call pause_loop_spacebar
@@ -146,6 +147,7 @@ draw_cactus:
 reset_cact_count:  
     ld (hl), 0              ;Reset to zero
 cact_fin:
+    call draw_land
     ret
     
     
@@ -324,6 +326,12 @@ row_loop:
   exx
   pop de
 
+  pop af  ;a has y-coord
+  push af ; x,y still saved on stack
+  sub 41
+  jp c, done_setting
+  
+collision_detection:
   ld a, d      ;put trex byte into accumulator
   and (hl)     ;collision detection
   jp nz, set_end_game_flag
@@ -405,6 +413,20 @@ delete_row_loop:
   ;ld a, $7    ;;set back
   ;call $229b
   ret
+
+draw_land:
+  ld c, 0
+  ld b, 40
+  call $22aa ;hl holds addr of start of land
+
+  ld b, 32
+land_loop0:
+  ld (hl), $ff
+  inc hl
+  dec b
+  jp nz, land_loop0
+  ret
+
 
 
 trex_stand:
