@@ -285,9 +285,9 @@ jmp_index_not_11:
   cp $1                  
   jp nz, jmp_walk          ;if the last key wasn't a spacebar, walk the trex. Else inc
   ld (hl), 0
-  ld hl, 497
-  ld de, 20
-  call $3b5               ;Play a tone every time the player jumps
+  ;ld hl, 497
+  ;ld de, 20
+  ;call $3b5               ;Play a tone every time the player jumps
   call delete_current_walking
   ld hl, previous_walking
   ld (hl), 0
