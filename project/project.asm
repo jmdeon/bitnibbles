@@ -116,14 +116,10 @@ GAME_LOOP:
     ld a, (hl)                  ;Load counter
     cp $0                       ;Compare counter to zero 
     call nz, draw_cactus        ;Draw cactus if counter not zero, allows dinosaur to be drawn
-    ld a, $3    ;;set border to purple
-    call $229b   
     ld hl, counter              ;Load counter location for frames
     ld a, (hl)                  ;Load counter
     cp $0                       ;Compare counter to zero 
     call z, jump_iterate        ;Draw dinosaur if counter is zero
-    ld a, $7    ;;set border to grey
-    call $229b
     ld hl, counter              ;Load counter
     ld a, (hl)                  ;Load counter
     cp $2                       ;Maximum frames
@@ -456,16 +452,6 @@ row_loop:
   exx
   pop de
 
-  pop af  ;a has y-coord
-  push af ; x,y still saved on stack
-  sub 41
-  jp c, done_setting
-  
-collision_detection:
-  ld a, d      ;put trex byte into accumulator
-  and (hl)     ;collision detection
-  jp nz, set_end_game_flag
-done_setting: 
   ld a,d
   or (hl)
   ld (hl), a ;draw byte
@@ -487,15 +473,6 @@ done_setting:
   xor (hl)
   jp z, GAME_END
   ret
-
-set_end_game_flag:
-  push hl
-  ld hl, end_game_flag
-  ld (hl), $ff
-  pop hl
-  jp done_setting
-
-
   
 
 end_game_flag:
