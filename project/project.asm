@@ -133,8 +133,26 @@ reset_counter:
     ld (hl), $0                 ;Reset counter
 frame_end:
     call check_spacebar
+    call beep
     ei                          ;Enable interrupts
     ret
+   
+  
+beep_value:
+    defb $0
+  
+beep:
+  ld hl, beep_value
+  ld a, (hl)
+  cp 0
+  jp z, beep_end
+  ld hl, 497
+  ld de, 20
+  call $3b5               ;Play a tone every time the player jumps
+beep_end:
+  ld hl, beep_value
+  ld (hl), $0
+  ret
    
     
  
@@ -160,6 +178,7 @@ GAME_END:
     ld (hl), $18
     call draw_no_internet
     call draw_dino_init
+    call draw_land
     call pause_loop_spacebar
     call setup
     jp start_loop
@@ -285,9 +304,8 @@ jmp_index_not_11:
   cp $1                  
   jp nz, jmp_walk          ;if the last key wasn't a spacebar, walk the trex. Else inc
   ld (hl), 0
-  ;ld hl, 497
-  ;ld de, 20
-  ;call $3b5               ;Play a tone every time the player jumps
+  ld hl, beep_value
+  ld (hl), $1
   call delete_current_walking
   ld hl, previous_walking
   ld (hl), 0
