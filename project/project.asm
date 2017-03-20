@@ -115,15 +115,11 @@ GAME_LOOP:
     ld hl, counter              ;Load counter location for frames
     ld a, (hl)                  ;Load counter
     cp $0                       ;Compare counter to zero 
-    call nz, draw_cactus        ;Draw cactus if counter not zero, allows dinosaur to be drawn
-    ld a, $3    ;;set border to purple
-    call $229b   
+    call nz, draw_cactus        ;Draw cactus if counter not zero, allows dinosaur to be drawn  
     ld hl, counter              ;Load counter location for frames
     ld a, (hl)                  ;Load counter
     cp $0                       ;Compare counter to zero 
     call z, jump_iterate        ;Draw dinosaur if counter is zero
-    ld a, $7    ;;set border to grey
-    call $229b
     ld hl, counter              ;Load counter
     ld a, (hl)                  ;Load counter
     cp $2                       ;Maximum frames
@@ -155,13 +151,27 @@ beep_end:
   ld (hl), $0
   ret
    
+   
+hold:
+    inc a
+    ld bc,$0fff         ; max waiting time. Why?
+hold_loop:
+    dec bc              ; Need to use bc? Use another register?
+    ld a,b
+    or c
+    jr nz, hold_loop
+    ret
     
  
 GAME_END:
     ld hl, previous_walking
     ld (hl), 0
-    ld hl, 200
-    ld de, 20
+    ld hl, 7000
+    ld de, 3
+    call $3b5  ;Play a sharp tone to signify that the game has ended
+    call hold
+    ld hl, 7000
+    ld de, 3
     call $3b5  ;Play a sharp tone to signify that the game has ended
     im 1
     ei
@@ -482,6 +492,7 @@ done_setting:
   jp nz, outer_loop
   pop bc
 
+  
   ld hl, end_game_flag
   ld a, $ff
   xor (hl)
@@ -502,8 +513,6 @@ end_game_flag:
   defb $00
 
 delete_bitmap:
-  ;ld a, $3    ;;set border to purple
-  ;call $229b
   push bc
   exx
   pop bc   ;bc' has x,y
@@ -541,14 +550,10 @@ delete_row_loop:
 
   jp nz, delete_outer_loop
   pop bc
-  ;ld a, $7    ;;set back
-  ;call $229b
   ret
 
 
 draw_bitmap_dino:
-  ;ld a, $0    ;;set border to black
-  ;call $229b
   push bc
   exx
   pop bc   ;bc' has x,y
@@ -644,8 +649,6 @@ done_setting2:
   jp nz, outer_loop_dino
   pop bc
 
-  ;ld a, $7    ;;set back
-  ;call $229b
   ld hl, end_game_flag
   ld a, $ff
   xor (hl)
@@ -675,8 +678,6 @@ set_end_game_flag2:
 
 
 delete_bitmap_dino:
-  ;ld a, $3    ;;set border to purple
-  ;call $229b
   push bc
   exx
   pop bc   ;bc' has x,y
@@ -714,8 +715,6 @@ delete_row_loop_dino:
 
   jp nz, delete_outer_loop_dino
   pop bc
-  ;ld a, $7    ;;set back
-  ;call $229b
   ret
 
 get_pixel_addr_dino:
