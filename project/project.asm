@@ -457,11 +457,7 @@ cact_1:
   ld c, (hl)            ;Load X position into c
   ld hl, cact2_2        ;Load cactus 2 bitmap
   call delete_bitmap    ;Delete cactus 2
-  ld a, $3    ;;set border to white
-  call $229b   ;;send border color to ULA
   call scroll_land_routine
-  ld a, $7    ;;set border to white
-  call $229b   ;;send border color to ULA
   
   ld hl, pos            ;Load X position location
   ld a, (hl)            ;Load X position into a
