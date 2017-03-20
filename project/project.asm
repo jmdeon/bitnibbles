@@ -673,6 +673,17 @@ row_loop:
   exx
   pop de
 
+  pop af  ;a has y-coord
+  push af ; x,y still saved on stack
+  sub 41
+  jp c, done_setting
+  
+collision_detection:
+  ld a, d      ;put trex byte into accumulator
+  and (hl)     ;collision detection
+  jp nz, set_end_game_flag
+done_setting: 
+
   ld a,d
   or (hl)
   ld (hl), a ;draw byte
@@ -695,6 +706,15 @@ row_loop:
   xor (hl)
   jp z, GAME_END
   ret
+
+set_end_game_flag:
+  push hl
+  ld hl, end_game_flag
+  ld (hl), $ff
+  pop hl
+  jp done_setting
+
+
   
 
 end_game_flag:
