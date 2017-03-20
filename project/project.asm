@@ -8,66 +8,36 @@ start:
   call pause_loop_spacebar
   call setup
   
-  
 start_loop:
     jp start_loop
- 
-
-    
-;Counter for frame interrupts    
-counter:
-    defb $0
-  
-  
-;Main game loop, choses what to draw in each frame
-GAME_LOOP:
-    di                          ;Disable interrupts
-    ld hl, end_game_flag
-    ld a, (hl)
-    cp 0
-    jp nz, frame_end
-    ld hl, counter              ;Load counter location for frames
-    ld a, (hl)                  ;Load counter
-    cp $0                       ;Compare counter to zero 
-    call nz, draw_cactus        ;Draw cactus if counter not zero, allows dinosaur to be drawn
-    ld hl, counter              ;Load counter location for frames
-    ld a, (hl)                  ;Load counter
-    cp $0                       ;Compare counter to zero 
-    call z, jump_iterate        ;Draw dinosaur if counter is zero
-    ld hl, counter              ;Load counter
-    ld a, (hl)                  ;Load counter
-    cp $2                       ;Maximum frames
-    jp z, reset_counter         ;If frame reached, reset counter
-    inc (hl)                    ;Increment counter because max frame not reached
-    jp frame_end                ;Skip reset counter
-reset_counter:
-    ld (hl), $0                 ;Reset counter
-frame_end:
-    ld a, $3    ;;set border to purple
-    call $229b
-    call $0038                  ;Call builtin interrupt to grab keyboard
-    ld a, $7    ;;set border to purple
-    call $229b
-    ei                          ;Enable interrupts
-    ret
     
 
+;Sets the entire screen (border and center screen) to be white (unhighlighted)
+set_all_white:
+  ld a, $7    ;;set border to white
+  call $229b   ;;send border color to ULA
+  ld hl, $5800 ;;start of attr address
+  ld de, $5800 ;;start of attr address
+  ld (hl), $38 ;;grey background, black foreground
+  inc e        ;;move to the next attribute byte
+  ld bc, $2ff  ;;32 x 24 attr addresses - 1
+  ldir         ;;Loads remaning attribute bytes with $38
+  ret
+    
 ;Initalize and draw the Trex in its starting position
 draw_dino_init:
   ld hl, trex_stand
   ld c, 16     ;;X coordinate of top-left of initlal trex position
   ld b, 60     ;;Y coordinate of top-left of initial trex position
   call draw_bitmap ;;Draw the dino
-  
   ld hl, jmp_index
   ld (hl), 0
-  
   ld b, 60
   ld c, 232
   ld hl, cact2_2
   call draw_bitmap
   ret
-
+    
 ;Draw the no internet string at the bottom of the screen
 draw_no_internet:
   ld a, $1     ;;We are placing this at the bottom, so use channel 1
@@ -78,28 +48,38 @@ draw_no_internet:
   ret
 no_internet_string:
   defb 'There is no Internet connection'
+      
     
-GAME_END:
-    im 1
-    ei
-    call pause_loop_spacebar
-    call set_pixels_white
-     ld hl, end_game_flag
-    ld (hl), 0
-    ld hl, cact_count
-    ld (hl), 0
-    ld hl, pos
-    ld (hl), 232
-    call draw_no_internet
-    call draw_dino_init
-    call setup
-    jp start_loop
-
-draw_end_screen:
-   ret
+    
+    
+;Loop which holds until the user presses any button
+pause_loop_spacebar:
+  call check_spacebar
+  ld hl, spacebar_value
+  ld a, (hl)   ;;Load last pressed key from keyboard
+  cp $1        ;;Check if it hasn't been pressed yet
+  jp nz, pause_loop_spacebar ;;if they didn't push spacebar, return back to the pause loop
+  ret
+    
    
+spacebar_value:
+    defb $0
+    
+check_spacebar:
+  ld hl, spacebar_value                  ;Location that is checked in jump iterate     
+  ld a, $7f
+  IN a, ($fe)
+  rra
+  jp nc, spacebar_set
+  ld (hl), $0
+  jp end_spacebar_check
+spacebar_set:     
+  ld (hl), $1                  ;Load value that is checked in jump iterate
+end_spacebar_check:
+  ret
+  
+  
 ;Setup for interrupt handler   
-;
 setup:
     ld hl, $fff4        ;Store 'jp GAME_LOOP' at $fff4
     ld bc, GAME_LOOP    ;Grab GAME_LOOP Address
@@ -115,9 +95,87 @@ setup:
     
     im 2
     ei
+    ret  
+
+  
+
+  
+;Counter for frame interrupts    
+counter:
+    defb $0
+  
+;Main game loop, choses what to draw in each frame
+GAME_LOOP:
+    di                          ;Disable interrupts
+    ld hl, end_game_flag        ;Check if game has ended
+    ld a, (hl)                  ;Load end game flag
+    cp 0                        ;Compare to 0 (0 = game still playing)
+    jp nz, frame_end
+    ld hl, counter              ;Load counter location for frames
+    ld a, (hl)                  ;Load counter
+    cp $0                       ;Compare counter to zero 
+    call nz, draw_cactus        ;Draw cactus if counter not zero, allows dinosaur to be drawn
+    ld a, $3    ;;set border to purple
+    call $229b   
+    ld hl, counter              ;Load counter location for frames
+    ld a, (hl)                  ;Load counter
+    cp $0                       ;Compare counter to zero 
+    call z, jump_iterate        ;Draw dinosaur if counter is zero
+    ld a, $7    ;;set border to grey
+    call $229b
+    ld hl, counter              ;Load counter
+    ld a, (hl)                  ;Load counter
+    cp $2                       ;Maximum frames
+    jp z, reset_counter         ;If frame reached, reset counter
+    inc (hl)                    ;Increment counter because max frame not reached
+    jp frame_end                ;Skip reset counter
+reset_counter:
+    ld (hl), $0                 ;Reset counter
+frame_end:
+    call check_spacebar
+    ei                          ;Enable interrupts
     ret
    
+    
+ 
+GAME_END:
+    ld hl, previous_walking
+    ld (hl), 0
+    ld hl, 200
+    ld de, 20
+    call $3b5  ;Play a sharp tone to signify that the game has ended
+    im 1
+    ei
+    call pause_loop_spacebar
+    call set_pixels_white
+     ld hl, end_game_flag
+    ld (hl), 0
+    ld hl, cact_count
+    ld (hl), 0
+    ld hl, pos
+    ld (hl), 232
+    ld hl, $5c8a
+    ld (hl), $01
+    inc hl
+    ld (hl), $18
+    call draw_no_internet
+    call draw_dino_init
+    call pause_loop_spacebar
+    call setup
+    jp start_loop
+
    
+set_pixels_white:
+  ld hl, $4000
+  ld de, $4000
+  ld (hl), 0
+  inc e
+  ld bc, $17ff
+  ldir
+  ret   
+   
+
+
    
    
 
@@ -214,25 +272,32 @@ jump_iterate:
   ld b, (hl)              ;Load the jump index value into b
   ld a, 11                 ;a is the number of positions in the jump array
   cp b              
-  jp nz, jmp_index_not_11  ;if jump index is not 8, jump forward and check if it's 0
-  ld b, 0                 ;if jump index is 8, reset it
+  jp nz, jmp_index_not_11  ;if jump index is not 11, jump forward and check if it's 0
+  ld b, 0                 ;if jump index is 11, reset it
   ld (hl), b              ;save the index value and exit
   jp jmp_end     
 jmp_index_not_11:
   ld a, 0                 
   cp b                    
   jp nz, jmp_next_index   ;if the index is not zero, jump forward and increment
-  ld hl, $5c08          
+  ld hl, spacebar_value          
   ld a, (hl)              ;load in the last pressed key from the keyboard to a
-  cp $30                  
-  jp nz, jmp_end          ;if the last key wasn't a spacebar, exit. Else inc
-  ld (hl), 0 ;if the last key wasn't a spacebar, exit. Else inc
+  cp $1                  
+  jp nz, jmp_walk          ;if the last key wasn't a spacebar, walk the trex. Else inc
+  ld (hl), 0
   ld hl, 497
   ld de, 20
-  call 949
+  call $3b5               ;Play a tone every time the player jumps
+  call delete_current_walking
+  ld hl, previous_walking
+  ld (hl), 0
+  ld hl, trex_stand
+  ld b, 60
+  ld c, 16
+  call draw_bitmap
   ld hl, jmp_index
   ld b, (hl)
-jmp_next_index: ;THIS IS WEHERE IT GETS REALLY WEIRD
+jmp_next_index:
   call jmp_load_b         ;b = jmp_positions[old_index]
   ld hl, trex_stand
   ld c, 16
@@ -245,6 +310,9 @@ jmp_next_index: ;THIS IS WEHERE IT GETS REALLY WEIRD
   ld hl, trex_stand
   ld c, 16
   call draw_bitmap        ;draw the trex in the new position
+  jp jmp_end
+jmp_walk:
+  call draw_next_walking 
 jmp_end:
   ret
 
@@ -255,44 +323,88 @@ jmp_load_b:   ;Expects b to hold index and will return y position in b
   add hl, de              ;increment the pointer to base + index
   ld b, (hl)              ;b = jmp_positions[index]
   ret
-  
-;Sets the entire screen (border and center screen) to be white (unhighlighted)
-set_all_white:
-  ld a, $7    ;;set border to white
-  call $229b   ;;send border color to ULA
-  ld hl, $5800 ;;start of attr address
-  ld de, $5800 ;;start of attr address
-  ld (hl), $38 ;;grey background, black foreground
-  inc e        ;;move to the next attribute byte
-  ld bc, $2ff  ;;32 x 24 attr addresses - 1
-  ldir         ;;Loads remaning attribute bytes with $38
-  ret
-  
-set_pixels_white:
-  ld hl, $4000
-  ld de, $4000
+
+walking_counter:     ;used to determine when to switch to the next leg when walking
+  defb $00
+
+draw_next_walking:
+  ld hl, walking_counter
+  ld b, (hl)            ;load the walking counter
+  ld a, 1               
+  cp b
+  jp nz, reset_walking_counter  ;reset the walking counter every other frame when walking
+  ld hl, previous_walking       ;load the previous position the player was in (stepping position, i.e. which feet were down)
+  ld b, (hl)
+  ld a, 1
+  cp b
+  jp nz, walking_left           ;if the player didn't previously have the left leg up, jump ahead and make the next move have the left leg up 
+walking_right:
+  call delete_current_walking   ;if the player was on the left leg, delete the previous position and draw the trex with the right left up
+  ld hl, trex_right_up
+  ld c, 16
+  ld b, 60
+  call draw_bitmap
+  ld hl, previous_walking
+  ld (hl), 2                     ;set the previous walking position as the right leg up
+  jp save_walking
+walking_left:
+  call delete_current_walking   ;delete the previous walking position and draw with the left leg up
+  ld hl, trex_left_up
+  ld c, 16
+  ld b, 60
+  call draw_bitmap
+  ld hl, previous_walking
+  ld (hl), 1
+  jp save_walking
+reset_walking_counter:
   ld (hl), 0
-  inc e
-  ld bc, $17ff
-  ldir
+save_walking:
+  ld hl, walking_counter
+  inc (hl)
   ret
 
+previous_walking:                ;keep track of the previous leg position, 0 = standing, 1 = left leg up, 2 = right leg up
+  defb $00
 
-
-
-;Loop which holds until the user presses any button
-pause_loop_spacebar:
-  ld hl, $5c08 ;;ULA fills memory address $5c08 with the last pressed key from the keyboard
-  ld (hl), 0  ;;Reset memory position by setting it to zero
-pause_inner_loop:
-  ld hl, $5c08
-  ld a, (hl)   ;;Load last pressed key from keyboard
-  cp 0        ;;Check if it hasn't been pressed yet
-  jr z, pause_inner_loop ;;Loop back if it hasn't been touched
-  cp $30                ;;Did they push spacebar?
-  jp nz, pause_loop_spacebar ;;if they didn't push spacebar, return back to the pause loop
+delete_current_walking:
+  ld hl, previous_walking
+  ld b, (hl)
+  ld a, 0
+  cp b
+  call z, delete_standing       ;if the previous position was 0, delete a standing trex
+  ld hl, previous_walking
+  ld b, (hl)
+  ld a, 1
+  cp b
+  call z, delete_left_foot      ;if the previous position was 1, delete a left leg up trex
+  ld hl, previous_walking
+  ld b, (hl)
+  ld a, 2
+  cp b
+  call z, delete_right_foot     ;if the previous position was 2, delete a right leg trex
   ret
 
+delete_standing:
+  ld hl, trex_stand
+  ld c, 16
+  ld b, 60
+  call delete_bitmap
+  ret
+
+delete_left_foot:
+  ld hl, trex_left_up
+  ld c, 16
+  ld b, 60
+  call delete_bitmap
+  ret
+
+delete_right_foot:
+  ld hl, trex_right_up
+  ld c, 16
+  ld b, 60
+  call delete_bitmap
+  ret
+  
 
 ;hl bitmap addr
 ;b   loop counter
@@ -302,8 +414,6 @@ pause_inner_loop:
 ;assume hl holds bitmap addr 
 ;assume bc holds x,y
 draw_bitmap:
-  ;ld a, $0    ;;set border to black
-  ;call $229b
   push bc
   exx
   pop bc   ;bc' has x,y
@@ -352,8 +462,6 @@ done_setting:
   jp nz, outer_loop
   pop bc
 
-  ;ld a, $7    ;;set back
-  ;call $229b
   ld hl, end_game_flag
   ld a, $ff
   xor (hl)
