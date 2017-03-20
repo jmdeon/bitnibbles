@@ -162,6 +162,15 @@ hold_loop:
     jr nz, hold_loop
     ret
     
+long_hold:
+    call hold
+    call hold
+    call hold
+    call hold
+    call hold
+    call hold
+    ret
+    
  
 GAME_END:
     ld hl, previous_walking
@@ -190,6 +199,7 @@ GAME_END:
     call draw_no_internet
     call draw_dino_init
     call draw_land
+    call long_hold
     call pause_loop_spacebar
     call setup
     jp start_loop
