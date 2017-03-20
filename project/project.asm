@@ -236,17 +236,15 @@ jmp_index_not_11:
   call delete_current_walking
   ld hl, previous_walking
   ld (hl), 0
-  ld hl, trex_stand
-  ld b, 60
-  ld c, 16
-  call draw_bitmap
   ld hl, jmp_index
   ld b, (hl)
+  jp jmp_next_index_no_delete
 jmp_next_index:
   call jmp_load_b         ;b = jmp_positions[old_index]
   ld hl, trex_stand
   ld c, 16
   call delete_bitmap      ;delete the previous trex
+jmp_next_index_no_delete:
   ld hl, jmp_index
   ld b, (hl)
   inc b
