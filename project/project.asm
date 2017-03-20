@@ -4,6 +4,7 @@ start:
   call pre_compute_dino_addrs
   call set_all_white 
   call draw_land
+  call draw_land0
   call draw_dino_init
   call draw_no_internet
   call pause_loop_spacebar
@@ -308,15 +309,11 @@ GAME_LOOP:
     ld hl, counter              ;Load counter location for frames
     ld a, (hl)                  ;Load counter
     cp $0                       ;Compare counter to zero 
-    call nz, draw_cactus        ;Draw cactus if counter not zero, allows dinosaur to be drawn
-    ld a, $3    ;;set border to purple
-    call $229b   
+    call nz, draw_cactus        ;Draw cactus if counter not zero, allows dinosaur to be drawn  
     ld hl, counter              ;Load counter location for frames
     ld a, (hl)                  ;Load counter
     cp $0                       ;Compare counter to zero 
     call z, jump_iterate        ;Draw dinosaur if counter is zero
-    ld a, $7    ;;set border to grey
-    call $229b
     ld hl, counter              ;Load counter
     ld a, (hl)                  ;Load counter
     cp $2                       ;Maximum frames
@@ -348,13 +345,36 @@ beep_end:
   ld (hl), $0
   ret
    
+   
+hold:
+    inc a
+    ld bc,$0fff         ; max waiting time. Why?
+hold_loop:
+    dec bc              ; Need to use bc? Use another register?
+    ld a,b
+    or c
+    jr nz, hold_loop
+    ret
+    
+long_hold:
+    call hold
+    call hold
+    call hold
+    call hold
+    call hold
+    call hold
+    ret
     
  
 GAME_END:
     ld hl, previous_walking
     ld (hl), 0
-    ld hl, 200
-    ld de, 20
+    ld hl, 7000
+    ld de, 3
+    call $3b5  ;Play a sharp tone to signify that the game has ended
+    call hold
+    ld hl, 7000
+    ld de, 3
     call $3b5  ;Play a sharp tone to signify that the game has ended
     im 1
     ei
@@ -373,6 +393,8 @@ GAME_END:
     call draw_no_internet
     call draw_dino_init
     call draw_land
+    call draw_land0
+    call long_hold
     call pause_loop_spacebar
     call setup
     jp start_loop
@@ -435,6 +457,10 @@ cact_1:
   ld c, (hl)            ;Load X position into c
   ld hl, cact2_2        ;Load cactus 2 bitmap
   call delete_bitmap    ;Delete cactus 2
+  call scroll_land_routine
+  call scroll_land_routine
+  call scroll_land_routine
+  call scroll_land_routine
   
   ld hl, pos            ;Load X position location
   ld a, (hl)            ;Load X position into a
@@ -465,6 +491,10 @@ cact_2:
   ld c, (hl)            ;Load X position into c
   ld hl, cact2_1        ;Load Cactus 1 bitmap
   call delete_bitmap    ;Delete cactus 1 bitmap
+  call scroll_land_routine
+  call scroll_land_routine
+  call scroll_land_routine
+  call scroll_land_routine
   
   ld b, 60              ;Load Y position into b
   ld hl, pos            ;Load X position location
@@ -649,16 +679,6 @@ row_loop:
   exx
   pop de
 
-  pop af  ;a has y-coord
-  push af ; x,y still saved on stack
-  sub 41
-  jp c, done_setting
-  
-collision_detection:
-  ld a, d      ;put trex byte into accumulator
-  and (hl)     ;collision detection
-  jp nz, set_end_game_flag
-done_setting: 
   ld a,d
   or (hl)
   ld (hl), a ;draw byte
@@ -675,28 +695,18 @@ done_setting:
   jp nz, outer_loop
   pop bc
 
+  
   ld hl, end_game_flag
   ld a, $ff
   xor (hl)
   jp z, GAME_END
   ret
-
-set_end_game_flag:
-  push hl
-  ld hl, end_game_flag
-  ld (hl), $ff
-  pop hl
-  jp done_setting
-
-
   
 
 end_game_flag:
   defb $00
 
 delete_bitmap:
-  ;ld a, $3    ;;set border to purple
-  ;call $229b
   push bc
   exx
   pop bc   ;bc' has x,y
@@ -734,14 +744,10 @@ delete_row_loop:
 
   jp nz, delete_outer_loop
   pop bc
-  ;ld a, $7    ;;set back
-  ;call $229b
   ret
 
 
 draw_bitmap_dino:
-  ;ld a, $0    ;;set border to black
-  ;call $229b
   push bc
   exx
   pop bc   ;bc' has x,y
@@ -837,8 +843,6 @@ done_setting2:
   jp nz, outer_loop_dino
   pop bc
 
-  ;ld a, $7    ;;set back
-  ;call $229b
   ld hl, end_game_flag
   ld a, $ff
   xor (hl)
@@ -868,8 +872,6 @@ set_end_game_flag2:
 
 
 delete_bitmap_dino:
-  ;ld a, $3    ;;set border to purple
-  ;call $229b
   push bc
   exx
   pop bc   ;bc' has x,y
@@ -907,8 +909,6 @@ delete_row_loop_dino:
 
   jp nz, delete_outer_loop_dino
   pop bc
-  ;ld a, $7    ;;set back
-  ;call $229b
   ret
 
 get_pixel_addr_dino:
@@ -925,8 +925,6 @@ get_pixel_addr_dino:
   ld l, a
   ret
 
-
-
 draw_land:
   ld c, 0
   ld b, 40
@@ -939,6 +937,40 @@ land_loop0:
   dec b
   jp nz, land_loop0
   ret
+
+draw_land0:
+  ld c, 0
+  ld b, 38
+  call $22aa ;hl holds addr of start of land
+
+  ld b, 32
+  ld de, 100
+land_loop1:
+  ld a, (de)
+  and $30
+  ld (hl),a
+  inc hl
+  inc de
+  dec b
+  jp nz, land_loop1
+
+
+  ld c, 0
+  ld b, 36
+  call $22aa ;hl holds addr of start of land
+
+  ld b, 32
+land_loop2:
+  ld a, (de)
+  and $03
+  ld (hl),a
+  inc hl
+  inc de
+  dec b
+  jp nz, land_loop2
+  ret
+
+
 
 pre_compute_dino_addrs:
   ld de, $f000
@@ -965,6 +997,57 @@ precomp_loop:
   dec b ;decrement loop counter
   jp nz, precomp_loop
   ret
+
+scroll_land_routine:
+  ld c, 0
+  ld b, 38
+  call $22aa ;hl holds addr of start of land on right
+  ld a, (hl)
+  and $80
+  rlca
+  ld d, a    ;d holds leftmost bit in row
+  ld bc, 32
+  add hl, bc ; hl is now rightmost byte on screen
+  add 0      ;clear carry bit
+
+  ld b, 33
+scroll_loop0:
+  rl (hl)
+  dec hl
+  dec b
+  jp nz, scroll_loop0
+  ld bc, 32
+  add hl, bc ; hl is now rightmost byte on screen
+  ld a, (hl)
+  or d
+  ld (hl), a
+
+  ld c, 0
+  ld b, 36
+  call $22aa ;hl holds addr of start of land on right
+  ld a, (hl)
+  and $80
+  rlca
+  ld d, a    ;d holds leftmost bit in row
+  ld bc, 32
+  add hl, bc ; hl is now rightmost byte on screen
+  add 0      ;clear carry bit
+
+  ld b, 33
+scroll_loop1:
+  rl (hl)
+  dec hl
+  dec b
+  jp nz, scroll_loop1
+  ld bc, 32
+  add hl, bc ; hl is now rightmost byte on screen
+  ld a, (hl)
+  or d
+  ld (hl), a
+
+
+  ret
+
 
 
 
