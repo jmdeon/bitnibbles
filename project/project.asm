@@ -264,10 +264,11 @@ cact_1:
   ld c, (hl)            ;Load X position into c
   ld hl, cact2_2        ;Load cactus 2 bitmap
   call delete_bitmap    ;Delete cactus 2
+  ld a, $3    ;;set border to white
+  call $229b   ;;send border color to ULA
   call scroll_land_routine
-  call scroll_land_routine
-  call scroll_land_routine
-  call scroll_land_routine
+  ld a, $7    ;;set border to white
+  call $229b   ;;send border color to ULA
   
   ld hl, pos            ;Load X position location
   ld a, (hl)            ;Load X position into a
@@ -298,9 +299,6 @@ cact_2:
   ld c, (hl)            ;Load X position into c
   ld hl, cact2_1        ;Load Cactus 1 bitmap
   call delete_bitmap    ;Delete cactus 1 bitmap
-  call scroll_land_routine
-  call scroll_land_routine
-  call scroll_land_routine
   call scroll_land_routine
   
   ld b, 60              ;Load Y position into b
@@ -805,56 +803,79 @@ precomp_loop:
   jp nz, precomp_loop
   ret
 
+
 scroll_land_routine:
   ld c, 0
   ld b, 38
-  call $22aa ;hl holds addr of start of land on right
+  call $22aa ;hl holds addr of start of land on left
   ld a, (hl)
-  and $80
-  rlca
-  ld d, a    ;d holds leftmost bit in row
-  ld bc, 32
+  and $f0    ;mask out left nibble
+  rrca
+  rrca
+  rrca
+  rrca
+  ld d, a   ;store nibble in d for later
+  ld bc, 31
   add hl, bc ; hl is now rightmost byte on screen
-  add 0      ;clear carry bit
 
-  ld b, 33
-scroll_loop0:
-  rl (hl)
+  ld b, 32
+scroll_loop0: ;d is holding last bytes' nibble
+  ld a, (hl)
+  ld c, a ;save byte in c
+  and $0f ;mask out right nibble
+  rlca
+  rlca
+  rlca
+  rlca
+  or d
+  ld (hl), a
+  ld a, c ;get byte back in c
+  and $f0 ;mask out left nibble
+  rrca
+  rrca
+  rrca
+  rrca
+  ld d, a
   dec hl
   dec b
   jp nz, scroll_loop0
-  ld bc, 32
-  add hl, bc ; hl is now rightmost byte on screen
-  ld a, (hl)
-  or d
-  ld (hl), a
-
+  
   ld c, 0
   ld b, 36
-  call $22aa ;hl holds addr of start of land on right
+  call $22aa ;hl holds addr of start of land on left
   ld a, (hl)
-  and $80
-  rlca
-  ld d, a    ;d holds leftmost bit in row
-  ld bc, 32
+  and $f0    ;mask out left nibble
+  rrca
+  rrca
+  rrca
+  rrca
+  ld d, a   ;store nibble in d for later
+  ld bc, 31
   add hl, bc ; hl is now rightmost byte on screen
-  add 0      ;clear carry bit
 
-  ld b, 33
-scroll_loop1:
-  rl (hl)
+  ld b, 32
+scroll_loop1: ;d is holding last bytes' nibble
+  ld a, (hl)
+  ld c, a ;save byte in c
+  and $0f ;mask out right nibble
+  rlca
+  rlca
+  rlca
+  rlca
+  or d
+  ld (hl), a
+  ld a, c ;get byte back in c
+  and $f0 ;mask out left nibble
+  rrca
+  rrca
+  rrca
+  rrca
+  ld d, a
   dec hl
   dec b
   jp nz, scroll_loop1
-  ld bc, 32
-  add hl, bc ; hl is now rightmost byte on screen
-  ld a, (hl)
-  or d
-  ld (hl), a
-
 
   ret
-
 
 
 
