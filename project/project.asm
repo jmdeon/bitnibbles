@@ -42,17 +42,210 @@ draw_dino_init:
     
 ;Draw the no internet string at the bottom of the screen
 draw_no_internet:
-  ld a, $1     ;;We are placing this at the bottom, so use channel 1
-  call $1601   ;;Open channel 1
-  ld de, no_internet_string
-  ld bc, $1f   ;;The string is 31 characters
-  call $203c   ;;Call the print routine in the ROM
+  ld b, 7
+  ld c, 0
+  ld de, $3ea0    ;T
+  call draw_char
+  ld de, $3f40    ;h
+  call draw_char
+  ld de, $3f28    ;e
+  call draw_char
+  ld de, $3f90    ;r
+  call draw_char
+  ld de, $3f28    ;e
+  call draw_char
+  ld a, c
+  add 8           ;_
+  ld c, a        
+  ld de, $3f48    ;i
+  call draw_char
+  ld de, $3f98    ;s
+  call draw_char
+  ld a, c
+  add 8           ;_
+  ld c, a
+  ld de, $3f70    ;n
+  call draw_char
+  ld de, $3f78    ;o
+  call draw_char
+  ld a, c
+  add 8           ;_
+  ld c, a
+  ld de, $3e48    ;I
+  call draw_char
+  ld de, $3f70    ;n
+  call draw_char
+  ld de, $3fa0    ;t
+  call draw_char
+  ld de, $3f28    ;e
+  call draw_char
+  ld de, $3f90    ;r
+  call draw_char
+  ld de, $3f70    ;n
+  call draw_char
+  ld de, $3f28    ;e
+  call draw_char
+  ld de, $3fa0    ;t
+  call draw_char
+  ld a, c
+  add 8           ;_
+  ld c, a
+  ld de, $3f18    ;c
+  call draw_char
+  ld de, $3f78    ;o
+  call draw_char
+  ld de, $3f70    ;n
+  call draw_char
+  ld de, $3f70    ;n
+  call draw_char
+  ld de, $3f28    ;e
+  call draw_char
+  ld de, $3f18    ;c
+  call draw_char
+  ld de, $3fa0    ;t
+  call draw_char
+  ld de, $3f48    ;i
+  call draw_char
+  ld de, $3f78    ;o
+  call draw_char
+  ld de, $3f70    ;n
+  call draw_char
   ret
-no_internet_string:
-  defb 'There is no Internet connection'
-      
-    
-    
+
+;;Draw Caharacter (Unraveled loop, so repeated 8 times for every pixel row
+;;b and c holds the x, y position to draw at
+;;b is preserved
+;;c is preserbed but also incremented by 8
+draw_char:
+  push bc
+
+  ;;de holds the character memory position to draw
+  push de     ;save the current address of the character to print
+  push bc     ;save the current x, y
+  call $22aa  ;place the pixel address into hl
+  pop bc      ;retreive the current x,y
+  dec b       ;decrement the y
+  pop de      ;retreive the address of the character to print
+  push de     ;push de back onto stack //IS THIS NEEDED?
+  push hl     ;save the current pixel address
+  ld h, d     
+  ld l, e
+  ld d, (hl)  ;load the current pixel mapping into d
+  pop hl      ;retreive the current pixel address
+  ld (hl), d  ;set the pixel mapping into the pixel address
+  pop de      ;retreive the base character address
+  inc de      ;increment into the next 
+  push de     ;save the current address of the character to print
+  push bc     ;save the current x, y
+  call $22aa  ;place the pixel address into hl
+  pop bc      ;retreive the current x,y
+  dec b       ;decrement the y
+  pop de      ;retreive the address of the character to print
+  push de     ;push de back onto stack //IS THIS NEEDED?
+  push hl     ;save the current pixel address
+  ld h, d     
+  ld l, e
+  ld d, (hl)  ;load the current pixel mapping into d
+  pop hl      ;retreive the current pixel address
+  ld (hl), d  ;set the pixel mapping into the pixel address
+  pop de      ;retreive the base character address
+  inc de      ;increment into the next
+  push de     ;save the current address of the character to print
+  push bc     ;save the current x, y
+  call $22aa  ;place the pixel address into hl
+  pop bc      ;retreive the current x,y
+  dec b       ;decrement the y
+  pop de      ;retreive the address of the character to print
+  push de     ;push de back onto stack //IS THIS NEEDED?
+  push hl     ;save the current pixel address
+  ld h, d     
+  ld l, e
+  ld d, (hl)  ;load the current pixel mapping into d
+  pop hl      ;retreive the current pixel address
+  ld (hl), d  ;set the pixel mapping into the pixel address
+  pop de      ;retreive the base character address
+  inc de      ;increment into the next 
+  push de     ;save the current address of the character to print
+  push bc     ;save the current x, y
+  call $22aa  ;place the pixel address into hl
+  pop bc      ;retreive the current x,y
+  dec b       ;decrement the y
+  pop de      ;retreive the address of the character to print
+  push de     ;push de back onto stack //IS THIS NEEDED?
+  push hl     ;save the current pixel address
+  ld h, d     
+  ld l, e
+  ld d, (hl)  ;load the current pixel mapping into d
+  pop hl      ;retreive the current pixel address
+  ld (hl), d  ;set the pixel mapping into the pixel address
+  pop de      ;retreive the base character address
+  inc de      ;increment into the next
+  push de     ;save the current address of the character to print
+  push bc     ;save the current x, y
+  call $22aa  ;place the pixel address into hl
+  pop bc      ;retreive the current x,y
+  dec b       ;decrement the y
+  pop de      ;retreive the address of the character to print
+  push de     ;push de back onto stack //IS THIS NEEDED?
+  push hl     ;save the current pixel address
+  ld h, d     
+  ld l, e
+  ld d, (hl)  ;load the current pixel mapping into d
+  pop hl      ;retreive the current pixel address
+  ld (hl), d  ;set the pixel mapping into the pixel address
+  pop de      ;retreive the base character address
+  inc de      ;increment into the next
+  push de     ;save the current address of the character to print
+  push bc     ;save the current x, y
+  call $22aa  ;place the pixel address into hl
+  pop bc      ;retreive the current x,y
+  dec b       ;decrement the y
+  pop de      ;retreive the address of the character to print
+  push de     ;push de back onto stack //IS THIS NEEDED?
+  push hl     ;save the current pixel address
+  ld h, d     
+  ld l, e
+  ld d, (hl)  ;load the current pixel mapping into d
+  pop hl      ;retreive the current pixel address
+  ld (hl), d  ;set the pixel mapping into the pixel address
+  pop de      ;retreive the base character address
+  inc de      ;increment into the next
+  push de     ;save the current address of the character to print
+  push bc     ;save the current x, y
+  call $22aa  ;place the pixel address into hl
+  pop bc      ;retreive the current x,y
+  dec b       ;decrement the y
+  pop de      ;retreive the address of the character to print
+  push de     ;push de back onto stack //IS THIS NEEDED?
+  push hl     ;save the current pixel address
+  ld h, d     
+  ld l, e
+  ld d, (hl)  ;load the current pixel mapping into d
+  pop hl      ;retreive the current pixel address
+  ld (hl), d  ;set the pixel mapping into the pixel address
+  pop de      ;retreive the base character address
+  inc de      ;increment into the next
+  push de     ;save the current address of the character to print
+  push bc     ;save the current x, y
+  call $22aa  ;place the pixel address into hl
+  pop bc      ;retreive the current x,y
+  dec b       ;decrement the y
+  pop de      ;retreive the address of the character to print
+  push de     ;push de back onto stack //IS THIS NEEDED?
+  push hl     ;save the current pixel address
+  ld h, d     
+  ld l, e
+  ld d, (hl)  ;load the current pixel mapping into d
+  pop hl      ;retreive the current pixel address
+  ld (hl), d  ;set the pixel mapping into the pixel address
+  pop de      ;retreive the base character address
+  inc de      ;increment into the next
+
+  pop bc
+  ld a, c
+  add 8
+  ld c, a
+  ret 
     
 ;Loop which holds until the user presses any button
 pause_loop_spacebar:
