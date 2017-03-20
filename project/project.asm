@@ -1,6 +1,7 @@
   org 32768           ; Why 32768? Could it be another location?
 
 start:
+  call pre_compute_dino_addrs
   call set_all_white 
   call draw_land
   call draw_dino_init
@@ -29,7 +30,7 @@ draw_dino_init:
   ld hl, trex_stand
   ld c, 16     ;;X coordinate of top-left of initlal trex position
   ld b, 60     ;;Y coordinate of top-left of initial trex position
-  call draw_bitmap ;;Draw the dino
+  call draw_bitmap_dino ;;Draw the dino
   ld hl, jmp_index
   ld (hl), 0
   ld b, 60
@@ -157,7 +158,7 @@ GAME_END:
     ld hl, $5c8a
     ld (hl), $01
     inc hl
-    ld (hl), $18
+   ld (hl), $18
     call draw_no_internet
     call draw_dino_init
     call pause_loop_spacebar
@@ -294,7 +295,8 @@ jmp_index_not_11:
   ld hl, trex_stand
   ld b, 60
   ld c, 16
-  call draw_bitmap
+  ;call draw_bitmap
+  call draw_bitmap_dino ;;Draw the dino
   ld hl, jmp_index
   ld b, (hl)
 jmp_next_index:
@@ -309,7 +311,8 @@ jmp_next_index:
   call jmp_load_b
   ld hl, trex_stand
   ld c, 16
-  call draw_bitmap        ;draw the trex in the new position
+  ;call draw_bitmap        ;draw the trex in the new position
+  call draw_bitmap_dino ;;Draw the dino
   jp jmp_end
 jmp_walk:
   call draw_next_walking 
@@ -343,7 +346,8 @@ walking_right:
   ld hl, trex_right_up
   ld c, 16
   ld b, 60
-  call draw_bitmap
+  ;call draw_bitmap
+  call draw_bitmap_dino ;;Draw the dino
   ld hl, previous_walking
   ld (hl), 2                     ;set the previous walking position as the right leg up
   jp save_walking
@@ -352,7 +356,8 @@ walking_left:
   ld hl, trex_left_up
   ld c, 16
   ld b, 60
-  call draw_bitmap
+  ;call draw_bitmap
+  call draw_bitmap_dino ;;Draw the dino
   ld hl, previous_walking
   ld (hl), 1
   jp save_walking
@@ -475,6 +480,9 @@ set_end_game_flag:
   pop hl
   jp done_setting
 
+
+  
+
 end_game_flag:
   defb $00
 
@@ -522,6 +530,195 @@ delete_row_loop:
   ;call $229b
   ret
 
+
+draw_bitmap_dino:
+  ;ld a, $0    ;;set border to black
+  ;call $229b
+  push bc
+  exx
+  pop bc   ;bc' has x,y
+  exx
+
+  ld b, 24
+  push bc
+outer_loop_dino:
+  
+  exx
+  push bc  ;save current y coord
+  call get_pixel_addr_dino   ;hl' holds pixel-byte addr of c,b
+
+  exx
+  ld d, (hl)
+  inc hl ;inc bitmap_addr
+  push de
+  exx
+  pop de
+
+  pop af  ;a has y-coord
+  push af ; x,y still saved on stack
+  sub 41
+
+
+  jp c, done_setting0
+  
+collision_detection0:
+  ld a, d      ;put trex byte into accumulator
+  and (hl)     ;collision detection
+  jp nz, set_end_game_flag0
+done_setting0: 
+  ld a,d
+  or (hl)
+  ld (hl), a ;draw byte
+  inc hl  ;inc draw location
+
+  exx
+  ld d, (hl)
+  inc hl ;inc bitmap_addr
+  push de
+  exx
+  pop de
+
+  pop af  ;a has y-coord
+  push af ; x,y still saved on stack
+  sub 41
+
+
+  jp c, done_setting1
+  
+collision_detection1:
+  ld a, d      ;put trex byte into accumulator
+  and (hl)     ;collision detection
+  jp nz, set_end_game_flag1
+done_setting1: 
+  ld a,d
+  or (hl)
+  ld (hl), a ;draw byte
+  inc hl  ;inc draw location
+
+  exx
+  ld d, (hl)
+  inc hl ;inc bitmap_addr
+  push de
+  exx
+  pop de
+
+  pop af  ;a has y-coord
+  push af ; x,y still saved on stack
+  sub 41
+
+
+  jp c, done_setting2
+  
+collision_detection2:
+  ld a, d      ;put trex byte into accumulator
+  and (hl)     ;collision detection
+  jp nz, set_end_game_flag2
+done_setting2: 
+  ld a,d
+  or (hl)
+  ld (hl), a ;draw byte
+  inc hl  ;inc draw location
+
+  pop bc   ;get y-coord
+  dec b    ;dec y-coord
+  exx
+  pop bc
+  dec b
+  push bc
+
+  jp nz, outer_loop_dino
+  pop bc
+
+  ;ld a, $7    ;;set back
+  ;call $229b
+  ld hl, end_game_flag
+  ld a, $ff
+  xor (hl)
+  jp z, GAME_END
+  ret
+
+set_end_game_flag0:
+  push hl
+  ld hl, end_game_flag
+  ld (hl), $ff
+  pop hl
+  jp done_setting0
+
+set_end_game_flag1:
+  push hl
+  ld hl, end_game_flag
+  ld (hl), $ff
+  pop hl
+  jp done_setting1
+
+set_end_game_flag2:
+  push hl
+  ld hl, end_game_flag
+  ld (hl), $ff
+  pop hl
+  jp done_setting2
+
+
+delete_bitmap_dino:
+  ;ld a, $3    ;;set border to purple
+  ;call $229b
+  push bc
+  exx
+  pop bc   ;bc' has x,y
+  exx
+
+  ld b, 24
+  push bc
+delete_outer_loop_dino:
+
+  exx
+  push bc  ;save current y coord
+  call get_pixel_addr_dino   ;hl' holds pixel-byte addr of c,b
+
+  ld b, 3
+delete_row_loop_dino:
+  exx
+  ld d, (hl)
+  inc hl ;inc bitmap_addr
+  push de
+  exx
+  pop de
+
+  ld a,d
+  xor (hl)
+  ld (hl), a ;draw byte
+  inc hl  ;inc draw location
+
+  djnz delete_row_loop_dino;loop until all 3 bytes of row complete
+  pop bc   ;get y-coord
+  dec b    ;dec y-coord
+  exx
+  pop bc
+  dec b
+  push bc
+
+  jp nz, delete_outer_loop_dino
+  pop bc
+  ;ld a, $7    ;;set back
+  ;call $229b
+  ret
+
+get_pixel_addr_dino:
+  ld d, $f0
+  ld a, b
+  sub 36
+  sla a
+  ld e, a
+  ld a, (de)
+  inc de
+  ld h, a
+  ld a, (de)
+  inc de
+  ld l, a
+  ret
+
+
+
 draw_land:
   ld c, 0
   ld b, 40
@@ -533,6 +730,32 @@ land_loop0:
   inc hl
   dec b
   jp nz, land_loop0
+  ret
+
+pre_compute_dino_addrs:
+  ld de, $f000
+
+  ld c, 16
+  ld b, 36
+  exx
+  ld b, 73
+precomp_loop:
+  exx
+
+  push bc
+  call $22aa
+  ld a, h
+  ld (de),a
+  inc de
+  ld a, l
+  ld (de),a
+  inc de
+
+  pop bc
+  inc b ;decrement y-coord
+  exx
+  dec b ;decrement loop counter
+  jp nz, precomp_loop
   ret
 
 
