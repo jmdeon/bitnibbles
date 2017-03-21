@@ -390,7 +390,7 @@ GAME_END:
     ei
     call pause_loop_spacebar
     call set_pixels_white
-     ld hl, end_game_flag
+    ld hl, end_game_flag
     ld (hl), 0
     ld hl, cact_count
     ld (hl), 0
@@ -399,7 +399,7 @@ GAME_END:
     ld hl, $5c8a
     ld (hl), $01
     inc hl
-   ld (hl), $18
+    ld (hl), $18
     call draw_no_internet
     call draw_sprites_init
     call draw_land
@@ -1172,6 +1172,23 @@ scroll_loop1: ;d is holding last bytes' nibble
   jp nz, scroll_loop1
 
   ret
+
+
+;;returns 
+random_x:
+  ld hl, random_val
+  inc (hl)
+  ld a, (hl)
+  and $08           ;change this to $18 for rand 0-3
+  rrca
+  rrca
+  rrca
+  ret
+
+random_val:
+  defb 0
+
+
 
 
 
