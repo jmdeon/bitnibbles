@@ -424,6 +424,8 @@ update_score_2:
   ld (hl), 0               ;continue on with digits 2, 3, and 4
   ld hl, current_score_2_redraw
   inc (hl)
+  ld hl, beep_value
+  ld (hl), 2
   ld hl, current_score_2
   ld a, (hl)
   cp 9
@@ -547,9 +549,19 @@ beep:
   ld a, (hl)
   cp 0
   jp z, beep_end
+  cp 2
+  jp z, beep_score
   ld hl, 810
   ld de, 20
   call $3b5               ;Play a tone every time the player jumps
+  jp beep_end
+beep_score:
+  ld hl, 500
+  ld de, 10
+  call $3b5
+  ld hl, 200
+  ld de, 10
+  call $3b5
 beep_end:
   ld hl, beep_value
   ld (hl), $0
