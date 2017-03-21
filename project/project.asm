@@ -4,7 +4,6 @@
   call save_stack_pointer
   call set_all_white 
 start:
-  call reset_stack_pointer
   call draw_land
   call draw_land0
   call draw_sprites_init
@@ -13,6 +12,7 @@ start:
   call init_score
   call pause_loop_spacebar
   call setup
+  call reset_stack_pointer
   
 start_loop:
     jp start_loop
