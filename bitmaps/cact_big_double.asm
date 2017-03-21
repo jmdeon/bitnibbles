@@ -16,7 +16,7 @@ cact_big_double_1:
         defb $0d, $d9, $bb
         defb $0f, $d9, $bf
         defb $07, $d9, $be
-        defb $01, $d9, $be
+        defb $01, $d9, $b8
         defb $01, $d9, $f8
         
         ;; ROW 3
@@ -47,7 +47,7 @@ cact_big_double_2:
         defb $dd, $9b, $b0
         defb $fd, $9b, $f0
         defb $7d, $9b, $e0
-        defb $1d, $9b, $e0
+        defb $1d, $9b, $80
         defb $1d, $9f, $80
         
         ;; ROW 3
