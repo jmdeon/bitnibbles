@@ -55,7 +55,7 @@ cact_small_double_2:
         defb $dd, $9f, $b0
         defb $dd, $8f, $b0
         defb $ff, $83, $f0
-        defb $7f, $f0, $00
+        defb $7f, $03, $80
         defb $1c, $03, $80
         defb $1c, $03, $80
         defb $1c, $03, $80
