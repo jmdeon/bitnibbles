@@ -5,7 +5,7 @@ start:
   call set_all_white 
   call draw_land
   call draw_land0
-  call draw_dino_init
+  call draw_sprites_init
   call draw_no_internet
   call pause_loop_spacebar
   call setup
@@ -27,16 +27,17 @@ set_all_white:
   ret
     
 ;Initalize and draw the Trex in its starting position
-draw_dino_init:
+draw_sprites_init:
   ld hl, trex_stand
   ld c, 16     ;;X coordinate of top-left of initlal trex position
   ld b, 60     ;;Y coordinate of top-left of initial trex position
   call draw_bitmap_dino ;;Draw the dino
   ld hl, jmp_index
   ld (hl), 0
+  
   ld b, 60
   ld c, 232
-  ld hl, cact_small_double_2
+  ld hl, cact_big_single_2
   call draw_bitmap
   ret
     
@@ -337,7 +338,7 @@ beep:
   ld a, (hl)
   cp 0
   jp z, beep_end
-  ld hl, 820
+  ld hl, 810
   ld de, 20
   call $3b5               ;Play a tone every time the player jumps
 beep_end:
@@ -391,7 +392,7 @@ GAME_END:
     inc hl
    ld (hl), $18
     call draw_no_internet
-    call draw_dino_init
+    call draw_sprites_init
     call draw_land
     call draw_land0
     call long_hold
@@ -413,22 +414,48 @@ set_pixels_white:
 
    
    
+draw_cact_init:
+    
+   
+   
 
 ;Counter of cactus position
+
+rand_sprite:
+    defb 0
+
+
+
 cact_count:
     defb 0
   
 ;Handle drawing cactus
 draw_cactus:
+
+draw_big_single:
     ld hl, cact_count       ;Load cactus position
     ld a, (hl)              ;Load cactus position
     cp 0                    ;Check if first position
-    call z, cact_1          ;If so, draw cactus 1
+    call z, draw_big_single_1          ;If so, draw cactus 1
     ld hl, cact_count       ;Load cactus position
     ld a, (hl)              ;Load cactus position
     cp 1                    ;Check if second position
-    call z, cact_2          ;If so, draw cactus 2
+    call z, draw_big_single_2          ;If so, draw cactus 2
+    jp draw_cact_end
     
+
+draw_small_double:
+    ld hl, cact_count       ;Load cactus position
+    ld a, (hl)              ;Load cactus position
+    cp 0                    ;Check if first position
+    call z, draw_small_double_1          ;If so, draw cactus 1
+    ld hl, cact_count       ;Load cactus position
+    ld a, (hl)              ;Load cactus position
+    cp 1                    ;Check if second position
+    call z, draw_small_double_2          ;If so, draw cactus 2
+    
+draw_cact_end:
+
     
     ;Cactus counter reset logic
     ld hl, cact_count       ;Load cactus counter
@@ -450,7 +477,7 @@ pos:
     
 
 ;Draw cactus 1, delete cactus 2    
-cact_1:
+draw_small_double_1:
 
   ld b, 60              ;Load Y Position of cactus 2 into b
   ld hl, pos            ;Load X position location
@@ -462,31 +489,32 @@ cact_1:
   ld hl, pos            ;Load X position location
   ld a, (hl)            ;Load X position into a
   cp 0                  ;Lowest X position on screen
-  jp z, reset_cact_pos  ;If there, reset position
+  jp z, reset_cact_pos_1  ;If there, reset position
   sub 8                 ;Subtract 8 to move 8 bits left
   ld (hl), a            ;Store result into position
-  jp pos_end            ;Skip reloading position
-reset_cact_pos:
+  jp pos_end_1            ;Skip reloading position
+reset_cact_pos_1:
   ld a, 232             ;Load maximum X location into position 
+  ;set a restart flag
   ld (hl), a            ;Store new position
-pos_end:
+pos_end_1:
 
   
   ld hl, pos            ;Load X position location
   ld c, (hl)            ;Load X position into c                
   ld b, 60              ;Load Y position into b
-  ld hl, cact_small_double_2        ;Load cactus 1 bitmap
+  ld hl, cact_small_double_1        ;Load cactus 1 bitmap
   call draw_bitmap      ;Draw cactus 1 bitmap
   ret
   
   
 ;Delete cactus 1, draw cactus 2
-cact_2:
+draw_small_double_2:
 
   ld b, 60              ;Load Y position into b
   ld hl, pos            ;Load X position location
   ld c, (hl)            ;Load X position into c
-  ld hl, cact2_1        ;Load Cactus 1 bitmap
+  ld hl, cact_small_double_1        ;Load Cactus 1 bitmap
   call delete_bitmap    ;Delete cactus 1 bitmap
   call scroll_land_routine
   
@@ -494,6 +522,55 @@ cact_2:
   ld hl, pos            ;Load X position location
   ld c, (hl)            ;Load X position into c
   ld hl, cact_small_double_2        ;Load Cactus 2 bitmap
+  call draw_bitmap      ;Draw Cactus 2 bitmap
+  ret
+  
+  
+draw_big_single_1:
+
+  ld b, 60              ;Load Y Position of cactus 2 into b
+  ld hl, pos            ;Load X position location
+  ld c, (hl)            ;Load X position into c
+  ld hl, cact_big_single_2        ;Load cactus 2 bitmap
+  call delete_bitmap    ;Delete cactus 2
+  call scroll_land_routine
+  
+  ld hl, pos            ;Load X position location
+  ld a, (hl)            ;Load X position into a
+  cp 0                  ;Lowest X position on screen
+  jp z, reset_cact_pos_2  ;If there, reset position
+  sub 8                 ;Subtract 8 to move 8 bits left
+  ld (hl), a            ;Store result into position
+  jp pos_end_2            ;Skip reloading position
+reset_cact_pos_2:
+  ld a, 232             ;Load maximum X location into position 
+  ;set a restart flag
+  ld (hl), a            ;Store new position
+pos_end_2:
+
+  
+  ld hl, pos            ;Load X position location
+  ld c, (hl)            ;Load X position into c                
+  ld b, 60              ;Load Y position into b
+  ld hl, cact_big_single_1        ;Load cactus 1 bitmap
+  call draw_bitmap      ;Draw cactus 1 bitmap
+  ret
+  
+  
+;Delete cactus 1, draw cactus 2
+draw_big_single_2:
+
+  ld b, 60              ;Load Y position into b
+  ld hl, pos            ;Load X position location
+  ld c, (hl)            ;Load X position into c
+  ld hl, cact_big_single_1        ;Load Cactus 1 bitmap
+  call delete_bitmap    ;Delete cactus 1 bitmap
+  call scroll_land_routine
+  
+  ld b, 60              ;Load Y position into b
+  ld hl, pos            ;Load X position location
+  ld c, (hl)            ;Load X position into c
+  ld hl, cact_big_single_2        ;Load Cactus 2 bitmap
   call draw_bitmap      ;Draw Cactus 2 bitmap
   ret
   
