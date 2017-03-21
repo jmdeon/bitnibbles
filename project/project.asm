@@ -1222,7 +1222,7 @@ row_loop4:
   pop af  ;a has y-coord
   push af ; x,y still saved on stack
   sub 41
-  jp c, done_setting
+  jp c, done_setting4
   
 collision_detection4:
   ld a, d      ;put trex byte into accumulator
@@ -1319,7 +1319,7 @@ row_loop5:
   pop af  ;a has y-coord
   push af ; x,y still saved on stack
   sub 41
-  jp c, done_setting
+  jp c, done_setting5
   
 collision_detection5:
   ld a, d      ;put trex byte into accumulator
