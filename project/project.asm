@@ -1,9 +1,9 @@
   org 32768
 
   call pre_compute_dino_addrs
-  call save_stack_pointer
-  call set_all_white 
+  call save_stack_pointer 
 start:
+  call set_all_white
   call draw_land
   call draw_land0
   call draw_sprites_init
@@ -89,7 +89,7 @@ draw_sprites_init:
   ld b, 60
   ld c, 232
   ld hl, cact_big_single_1
-  call draw_bitmap
+  call draw_cact
   ld hl, rand_sprite
   ld (hl), 0
   ret
@@ -369,6 +369,9 @@ setup:
     ld (hl), $18        ;Store '$18' aka 'jr'
     ld a, $39           ;Load '$39' in I to get '$ffff' from $3900 to $39ff
     ld i, a             ;Load a into I
+    ld hl, random_val
+    ld a, r
+    ld (hl), a
     im 2
     ei
     ret  
@@ -864,6 +867,13 @@ draw_cactus:
   ld a, (hl)
   cp 1
   jp z, draw_small
+  ld a, (hl)
+  cp 2
+  jp z, draw_big_double
+  ld a, (hl)
+  cp 3
+  jp z, draw_ptero
+  
 
 draw_big:
   ld hl, cact_count       ;Load cactus position
@@ -884,6 +894,26 @@ draw_small:
   ld a, (hl)              ;Load cactus position
   cp 1                    ;Check if second position
   jp z, second_cact_small          ;If so, draw cactus 2
+  
+draw_big_double:
+  ld hl, cact_count       ;Load cactus position
+  ld a, (hl)              ;Load cactus position
+  cp 0                    ;Check if first position
+  jp z, first_cact_big_double          ;If so, draw cactus 1
+  ld hl, cact_count       ;Load cactus position
+  ld a, (hl)              ;Load cactus position
+  cp 1                    ;Check if second position
+  jp z, second_cact_big_double          ;If so, draw cactus 2
+  
+draw_ptero:
+  ld hl, cact_count       ;Load cactus position
+  ld a, (hl)              ;Load cactus position
+  cp 0                    ;Check if first position
+  jp z, first_pter          ;If so, draw cactus 1
+  ld hl, cact_count       ;Load cactus position
+  ld a, (hl)              ;Load cactus position
+  cp 1                    ;Check if second position
+  jp z, second_pter          ;If so, draw cactus 2
     
 first_cact_big:
   ld hl, cact_big_single_1
@@ -902,6 +932,27 @@ second_cact_big:
   cp 1
   jp z, new_cact
   ld hl, cact_big_single_1
+  call draw_cact
+  jp draw_cact_end
+  
+  
+first_cact_big_double:
+  ld hl, cact_big_double_1
+  call delete_cact
+  ld hl, cact_big_double_2
+  call draw_cact
+  jp draw_cact_end
+ 
+second_cact_big_double:
+  
+  ld hl, cact_big_double_2
+  call delete_cact
+  call sub_pos
+  ld hl, cact_over_flag
+  ld a, (hl)
+  cp 1
+  jp z, new_cact
+  ld hl, cact_big_double_1
   call draw_cact
   jp draw_cact_end
   
@@ -927,13 +978,38 @@ second_cact_small:
   jp draw_cact_end
   
   
+first_pter:
+  ld hl, pterodactyl_1
+  call delete_pter
+  ld hl, pterodactyl_2
+  call draw_pter
+  jp draw_cact_end
+ 
+second_pter:
+  
+  ld hl, pterodactyl_2
+  call delete_pter
+  call sub_pos
+  ld hl, cact_over_flag
+  ld a, (hl)
+  cp 1
+  jp z, new_cact
+  ld hl, pterodactyl_1
+  call draw_pter
+  jp draw_cact_end
+  
+  
 new_cact:
   call random_x
   cp 0
-  jp z, new_small
-  ld a, (hl)
-  cp 1
   jp z, new_big
+  cp 1
+  jp z, new_small
+  cp 2
+  jp z, new_big_double
+  cp 3
+  jp z, new_pter
+  
   
 new_big:
   ld hl, cact_big_single_1
@@ -947,6 +1023,20 @@ new_small:
   call draw_cact
   ld hl, rand_sprite
   ld (hl), 1
+  jp new_end
+  
+new_big_double:
+  ld hl, cact_big_double_1
+  call draw_cact
+  ld hl, rand_sprite
+  ld (hl), 2
+  jp new_end
+  
+new_pter:
+  ld hl, pterodactyl_1
+  call draw_pter
+  ld hl, rand_sprite
+  ld (hl), 3
   jp new_end
   
   
@@ -974,8 +1064,11 @@ cact_fin:
 random_x:
   ld hl, random_val
   inc (hl)
+  inc (hl)
+  inc (hl)
+  inc (hl)
   ld a, (hl)
-  and $08           ;change this to $18 for rand 0-3
+  and $18           ;change this to $18 for rand 0-3
   rrca
   rrca
   rrca
@@ -1010,6 +1103,23 @@ draw_cact:
   call draw_bitmap    ;Delete cactus 2
   ret
   
+delete_pter:
+  ld b, 72              ;Load Y Position of cactus 2 into b
+  ld de, pos            ;Load X position location
+  ld a, (de)            ;Load X position into c
+  ld c, a
+  call delete_bitmap    ;Delete cactus 2
+  call scroll_land_routine
+  ret
+  
+  
+draw_pter:
+  ld b, 72              ;Load Y Position of cactus 2 into b
+  ld de, pos            ;Load X position location
+  ld a, (de)            ;Load X position into c
+  ld c, a
+  call draw_bitmap    ;Delete cactus 2
+  ret
   
 sub_pos:
   ld hl, pos            ;Load X position location
@@ -2026,3 +2136,130 @@ cact_big_single_2:
         defb $00, $f0, $00
         defb $00, $f0, $00
         defb $00, $f0, $00
+        
+cact_big_double_1:
+        ;; ROW 1
+        defb $00, $80, $10
+        defb $05, $c0, $3a
+        defb $0d, $c0, $3b
+        defb $0d, $c0, $3b
+        defb $0d, $c0, $bb
+        defb $0d, $c1, $bb
+        defb $0d, $c1, $bb
+        defb $0d, $d1, $bb
+        
+        ;; ROW 2
+        defb $0d, $d9, $bb
+        defb $0d, $d9, $bb
+        defb $0d, $d9, $bb
+        defb $0d, $d9, $bb
+        defb $0f, $d9, $bf
+        defb $07, $d9, $be
+        defb $01, $d9, $be
+        defb $01, $d9, $f8
+        
+        ;; ROW 3
+        defb $01, $d8, $f8
+        defb $01, $d8, $38
+        defb $01, $f8, $38
+        defb $01, $f8, $38
+        defb $01, $f0, $38
+        defb $01, $c0, $38
+        defb $01, $c0, $38
+        defb $01, $c0, $38
+        
+cact_big_double_2:
+         ;; ROW 1
+        defb $08, $01, $00
+        defb $5c, $03, $a0
+        defb $dc, $03, $b0
+        defb $dc, $03, $b0
+        defb $dc, $0b, $b0
+        defb $dc, $1b, $b0
+        defb $dc, $1b, $b0
+        defb $dd, $1b, $b0
+        
+        ;; ROW 2
+        defb $dd, $9b, $b0
+        defb $dd, $9b, $b0
+        defb $dd, $9b, $b0
+        defb $dd, $9b, $b0
+        defb $fd, $9b, $f0
+        defb $7d, $9b, $e0
+        defb $1d, $9b, $e0
+        defb $1d, $9f, $80
+        
+        ;; ROW 3
+        defb $1d, $8f, $80
+        defb $1d, $83, $80
+        defb $1f, $83, $80
+        defb $1f, $83, $80
+        defb $1f, $03, $80
+        defb $1c, $03, $80
+        defb $1c, $03, $80
+        defb $1c, $03, $80
+
+pterodactyl_1:
+        ;; ROW 1
+        defb $00, $08, $00
+        defb $00, $0c, $00
+        defb $00, $0e, $00
+        defb $00, $07, $00
+        defb $00, $07, $80
+        defb $00, $c7, $c0
+        defb $01, $c7, $e0
+        defb $03, $e7, $e0
+        
+        ;; ROW 2
+        defb $07, $e7, $e0
+        defb $0f, $ff, $f0
+        defb $00, $3f, $ff
+        defb $00, $1f, $f8
+        defb $00, $0f, $fe
+        defb $00, $07, $f0
+        defb $00, $00, $00
+        defb $00, $00, $00
+        
+        ;; ROW 3
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        
+pterodactyl_2:
+        ;; ROW 1
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $0c, $00, $00
+        defb $1c, $00, $00
+        defb $3e, $00, $00
+        
+        ;; ROW 2
+        defb $7e, $00, $00
+        defb $ff, $ff, $00
+        defb $03, $ff, $f0
+        defb $01, $ff, $80
+        defb $00, $ff, $e0
+        defb $00, $ff, $00
+        defb $00, $7c, $00
+        defb $00, $78, $00
+        
+        ;; ROW 3
+        defb $00, $70, $00
+        defb $00, $60, $00
+        defb $00, $40, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+  
+
+        
