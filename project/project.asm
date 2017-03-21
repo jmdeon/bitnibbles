@@ -2,6 +2,7 @@
 
 start:
   call pre_compute_dino_addrs
+  call save_stack_pointer
   call set_all_white 
   call draw_land
   call draw_land0
@@ -12,6 +13,14 @@ start:
   
 start_loop:
     jp start_loop
+
+reset_stack_pointer:
+  ld sp, ($ff00)
+  ret
+  
+save_stack_pointer:
+  ld ($ff00), sp
+  ret
     
 
 ;Sets the entire screen (border and center screen) to be white (unhighlighted)
@@ -398,6 +407,7 @@ GAME_END:
     call long_hold
     call pause_loop_spacebar
     call setup
+    call reset_stack_pointer
     jp start_loop
 
    
@@ -614,7 +624,7 @@ jmp_next_index:
   call jmp_load_b         ;b = jmp_positions[old_index]
   ld hl, trex_stand
   ld c, 16
-  call delete_bitmap      ;delete the previous trex
+  call delete_bitmap_dino      ;delete the previous trex
 jmp_next_index_no_delete:
   ld hl, jmp_index
   ld b, (hl)
@@ -623,7 +633,6 @@ jmp_next_index_no_delete:
   call jmp_load_b
   ld hl, trex_stand
   ld c, 16
-  ;call draw_bitmap        ;draw the trex in the new position
   call draw_bitmap_dino ;;Draw the dino
   jp jmp_end
 jmp_walk:
@@ -658,7 +667,6 @@ walking_right:
   ld hl, trex_right_up
   ld c, 16
   ld b, 60
-  ;call draw_bitmap
   call draw_bitmap_dino ;;Draw the dino
   ld hl, previous_walking
   ld (hl), 2                     ;set the previous walking position as the right leg up
@@ -668,7 +676,6 @@ walking_left:
   ld hl, trex_left_up
   ld c, 16
   ld b, 60
-  ;call draw_bitmap
   call draw_bitmap_dino ;;Draw the dino
   ld hl, previous_walking
   ld (hl), 1
