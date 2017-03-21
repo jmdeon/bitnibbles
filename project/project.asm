@@ -58,6 +58,24 @@ set_all_white:
   ld bc, $2ff  ;;32 x 24 attr addresses - 1
   ldir         ;;Loads remaning attribute bytes with $38
   ret
+
+set_night_mode:
+  ld hl, $5800 ;;start of attr address
+  ld de, $5800 ;;start of attr address
+  ld (hl), $7 ;;grey background, black foreground
+  inc e        ;;move to the next attribute byte
+  ld bc, $2ff  ;;32 x 24 attr addresses - 1
+  ldir
+  ret
+
+set_party_mode:
+  ld hl, $5800 ;;start of attr address
+  ld de, $5800 ;;start of attr address
+  ld (hl), $38 ;;grey background, black foreground
+  inc e        ;;move to the next attribute byte
+  ld bc, $2ff  ;;32 x 24 attr addresses - 1
+  ldir
+  ret
     
 ;Initalize and draw the Trex in its starting position
 draw_sprites_init:
@@ -431,6 +449,9 @@ update_score_2:
   cp 9
   jp z, update_score_3
   inc (hl)
+  ld a, (hl)
+  cp 5
+  call z, set_night_mode
   jp update_score_end
 update_score_3:
   ld (hl), 0
