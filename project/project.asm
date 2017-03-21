@@ -149,6 +149,32 @@ draw_no_internet:
   call draw_char
   ret
 
+;Draw the game over text in the middle  of the screen
+;; Note: Instead of using a defw things have been hardcoded.
+display_game_over:
+  ld b, 100
+  ld c, 85
+  ld de, $3e38    ;G
+  call draw_char
+  ld de, $3e08    ;A
+  call draw_char
+  ld de, $3e68    ;M
+  call draw_char
+  ld de, $3e28    ;E
+  call draw_char
+  ld a, c
+  add 8           ;_
+  ld c, a        
+  ld de, $3e78    ;O
+  call draw_char
+  ld de, $3eb0    ;V
+  call draw_char
+  ld de, $3e28    ;E
+  call draw_char
+  ld de, $3e90    ;R
+  call draw_char
+  ret
+
 ;;Draw Caharacter (Unraveled loop, so repeated 8 times for every pixel row
 ;;  [in]: b and c holds the x, y position to draw at
 ;;  [in]: de is the address of the character to print
@@ -561,6 +587,7 @@ GAME_END:
     call $3b5  ;Play a sharp tone to signify that the game has ended
     im 1
     call draw_highscore             ;draw the highscore
+    call display_game_over
     call pause_loop_spacebar        ;wait for the player to hit the spacebar before leaving the gameover screen
     call set_pixels_white           ;erase the screen
     call draw_highscore             ;redraw the highscore after erasing the screen
