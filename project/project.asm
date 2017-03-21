@@ -1145,7 +1145,7 @@ row_loop:
 collision_detection:
   ld a, d      ;put trex byte into accumulator
   and (hl)     ;collision detection
-  jp nz, set_end_game_flag
+  call nz, set_end_game_flag
 done_setting: 
 
   ld a,d
@@ -1176,7 +1176,8 @@ set_end_game_flag:
   ld hl, end_game_flag
   ld (hl), $ff
   pop hl
-  jp done_setting
+  ret
+  ;jp done_setting
 
 end_game_flag:
   defb $00
@@ -1252,7 +1253,7 @@ row_loop4:
 collision_detection4:
   ld a, d      ;put trex byte into accumulator
   and (hl)     ;collision detection
-  jp nz, set_end_game_flag
+  call nz, set_end_game_flag
 done_setting4: 
 
   ld a,d
@@ -1349,7 +1350,7 @@ row_loop5:
 collision_detection5:
   ld a, d      ;put trex byte into accumulator
   and (hl)     ;collision detection
-  jp nz, set_end_game_flag
+  call nz, set_end_game_flag
 done_setting5: 
 
   ld a,d
