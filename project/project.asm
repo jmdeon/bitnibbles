@@ -1,18 +1,43 @@
-  org 32768           ; Why 32768? Could it be another location?
+  org 32768
 
-start:
   call pre_compute_dino_addrs
   call save_stack_pointer
   call set_all_white 
+start:
   call draw_land
   call draw_land0
   call draw_sprites_init
   call draw_no_internet
+  call long_hold
+  call init_score
   call pause_loop_spacebar
   call setup
+  call reset_stack_pointer
   
 start_loop:
     jp start_loop
+ 
+init_score:
+  ld hl, current_score_4
+  ld (hl), 0
+  ld hl, current_score_3
+  ld (hl), 0
+  ld hl, current_score_2
+  ld (hl), 0
+  ld hl, current_score_1
+  ld (hl), 0
+  ld hl, current_score_0
+  ld (hl), 0
+  ld hl, current_score_1_redraw
+  ld (hl), 1
+  ld hl, current_score_2_redraw
+  ld (hl), 1
+  ld hl, current_score_3_redraw
+  ld (hl), 1
+  ld hl, current_score_4_redraw
+  ld (hl), 1
+  call draw_score
+  ret
 
 reset_stack_pointer:
   ld sp, ($ff00)
@@ -22,7 +47,6 @@ save_stack_pointer:
   ld ($ff00), sp
   ret
     
-
 ;Sets the entire screen (border and center screen) to be white (unhighlighted)
 set_all_white:
   ld a, $7    ;;set border to white
@@ -51,6 +75,7 @@ draw_sprites_init:
   ret
     
 ;Draw the no internet string at the bottom of the screen
+;; Note: Instead of using a defw things have been hardcoded.
 draw_no_internet:
   ld b, 7
   ld c, 0
@@ -123,133 +148,136 @@ draw_no_internet:
   ret
 
 ;;Draw Caharacter (Unraveled loop, so repeated 8 times for every pixel row
-;;b and c holds the x, y position to draw at
-;;b is preserved
-;;c is preserbed but also incremented by 8
+;;  [in]: b and c holds the x, y position to draw at
+;;  [in]: de is the address of the character to print
+;;  [out]: b is preserved
+;;  [out]: is preserbed but also incremented by 8
 draw_char:
-  push bc
+  push bc     ;save the current x,y so that it can persist beyond this routine
+  push de     ;save the current address of the character to print
+  push bc     ;save the current x, y while calling the address rom routine
+  call $22aa  ;place the pixel address into hl
+  pop bc      ;retreive the current x,y
+  dec b       ;decrement the y
+  pop de      ;retreive the address of the character to print
+  push de     ;push de back onto stack //IS THIS NEEDED?
+  push hl     ;save the current pixel address
+  ld h, d     ;
+  ld l, e
+  ld d, (hl)  ;load the current pixel mapping into d
+  pop hl      ;retreive the current pixel address
+  ld (hl), d  ;set the pixel mapping into the pixel address
+  pop de      ;retreive the base character address
 
-  ;;de holds the character memory position to draw
-  push de     ;save the current address of the character to print
-  push bc     ;save the current x, y
-  call $22aa  ;place the pixel address into hl
-  pop bc      ;retreive the current x,y
-  dec b       ;decrement the y
-  pop de      ;retreive the address of the character to print
-  push de     ;push de back onto stack //IS THIS NEEDED?
-  push hl     ;save the current pixel address
+  inc de      ;repeat into the next row
+  push de
+  push bc     
+  call $22aa  
+  pop bc      
+  dec b      
+  pop de   
+  push de
+  push hl 
   ld h, d     
   ld l, e
-  ld d, (hl)  ;load the current pixel mapping into d
-  pop hl      ;retreive the current pixel address
-  ld (hl), d  ;set the pixel mapping into the pixel address
-  pop de      ;retreive the base character address
-  inc de      ;increment into the next 
-  push de     ;save the current address of the character to print
-  push bc     ;save the current x, y
-  call $22aa  ;place the pixel address into hl
-  pop bc      ;retreive the current x,y
-  dec b       ;decrement the y
-  pop de      ;retreive the address of the character to print
-  push de     ;push de back onto stack //IS THIS NEEDED?
-  push hl     ;save the current pixel address
-  ld h, d     
-  ld l, e
-  ld d, (hl)  ;load the current pixel mapping into d
-  pop hl      ;retreive the current pixel address
-  ld (hl), d  ;set the pixel mapping into the pixel address
-  pop de      ;retreive the base character address
+  ld d, (hl)
+  pop hl     
+  ld (hl), d 
+  pop de    
+
   inc de      ;increment into the next
-  push de     ;save the current address of the character to print
-  push bc     ;save the current x, y
-  call $22aa  ;place the pixel address into hl
-  pop bc      ;retreive the current x,y
-  dec b       ;decrement the y
-  pop de      ;retreive the address of the character to print
-  push de     ;push de back onto stack //IS THIS NEEDED?
-  push hl     ;save the current pixel address
+  push de 
+  push bc     
+  call $22aa  
+  pop bc      
+  dec b      
+  pop de     
+  push de     
+  push hl     
   ld h, d     
   ld l, e
-  ld d, (hl)  ;load the current pixel mapping into d
-  pop hl      ;retreive the current pixel address
-  ld (hl), d  ;set the pixel mapping into the pixel address
-  pop de      ;retreive the base character address
-  inc de      ;increment into the next 
-  push de     ;save the current address of the character to print
-  push bc     ;save the current x, y
-  call $22aa  ;place the pixel address into hl
-  pop bc      ;retreive the current x,y
-  dec b       ;decrement the y
-  pop de      ;retreive the address of the character to print
-  push de     ;push de back onto stack //IS THIS NEEDED?
-  push hl     ;save the current pixel address
+  ld d, (hl)  
+  pop hl      
+  ld (hl), d 
+  pop de     
+
+  inc de      ;increment into the next row
+  push de     
+  push bc    
+  call $22aa  
+  pop bc      
+  dec b       
+  pop de      
+  push de     
+  push hl     
   ld h, d     
   ld l, e
-  ld d, (hl)  ;load the current pixel mapping into d
-  pop hl      ;retreive the current pixel address
-  ld (hl), d  ;set the pixel mapping into the pixel address
-  pop de      ;retreive the base character address
+  ld d, (hl)  
+  pop hl      
+  ld (hl), d  
+  pop de     
+
   inc de      ;increment into the next
-  push de     ;save the current address of the character to print
-  push bc     ;save the current x, y
-  call $22aa  ;place the pixel address into hl
-  pop bc      ;retreive the current x,y
-  dec b       ;decrement the y
-  pop de      ;retreive the address of the character to print
-  push de     ;push de back onto stack //IS THIS NEEDED?
-  push hl     ;save the current pixel address
+  push de    
+  push bc     
+  call $22aa  
+  pop bc      
+  dec b       
+  pop de      
+  push de     
+  push hl    
   ld h, d     
   ld l, e
-  ld d, (hl)  ;load the current pixel mapping into d
-  pop hl      ;retreive the current pixel address
-  ld (hl), d  ;set the pixel mapping into the pixel address
-  pop de      ;retreive the base character address
+  ld d, (hl)  
+  pop hl      
+  ld (hl), d  
+  pop de     
+
   inc de      ;increment into the next
-  push de     ;save the current address of the character to print
-  push bc     ;save the current x, y
-  call $22aa  ;place the pixel address into hl
-  pop bc      ;retreive the current x,y
-  dec b       ;decrement the y
-  pop de      ;retreive the address of the character to print
-  push de     ;push de back onto stack //IS THIS NEEDED?
-  push hl     ;save the current pixel address
+  push de     
+  push bc     
+  call $22aa  
+  pop bc      
+  dec b       
+  pop de      
+  push de     
+  push hl     
   ld h, d     
   ld l, e
-  ld d, (hl)  ;load the current pixel mapping into d
-  pop hl      ;retreive the current pixel address
-  ld (hl), d  ;set the pixel mapping into the pixel address
-  pop de      ;retreive the base character address
-  inc de      ;increment into the next
-  push de     ;save the current address of the character to print
-  push bc     ;save the current x, y
-  call $22aa  ;place the pixel address into hl
-  pop bc      ;retreive the current x,y
-  dec b       ;decrement the y
-  pop de      ;retreive the address of the character to print
-  push de     ;push de back onto stack //IS THIS NEEDED?
-  push hl     ;save the current pixel address
+  ld d, (hl)  
+  pop hl      
+  ld (hl), d  
+  pop de      
+
+  inc de      ;increment into the next row
+  push de     
+  push bc     
+  call $22aa  
+  pop bc      
+  dec b       
+  pop de      
+  push de     
+  push hl     
   ld h, d     
   ld l, e
-  ld d, (hl)  ;load the current pixel mapping into d
-  pop hl      ;retreive the current pixel address
-  ld (hl), d  ;set the pixel mapping into the pixel address
-  pop de      ;retreive the base character address
-  inc de      ;increment into the next
-  push de     ;save the current address of the character to print
-  push bc     ;save the current x, y
-  call $22aa  ;place the pixel address into hl
-  pop bc      ;retreive the current x,y
-  dec b       ;decrement the y
-  pop de      ;retreive the address of the character to print
-  push de     ;push de back onto stack //IS THIS NEEDED?
-  push hl     ;save the current pixel address
+  ld d, (hl)  
+  pop hl      
+  ld (hl), d  
+  pop de      
+
+  inc de      ;increment into the next row
+  push de     
+  push bc     
+  call $22aa 
+  pop bc     
+  dec b       
+  pop de      
+  push hl     
   ld h, d     
   ld l, e
-  ld d, (hl)  ;load the current pixel mapping into d
-  pop hl      ;retreive the current pixel address
-  ld (hl), d  ;set the pixel mapping into the pixel address
-  pop de      ;retreive the base character address
-  inc de      ;increment into the next
+  ld d, (hl)  
+  pop hl      
+  ld (hl), d  
 
   pop bc
   ld a, c
@@ -266,7 +294,6 @@ pause_loop_spacebar:
   jp nz, pause_loop_spacebar ;;if they didn't push spacebar, return back to the pause loop
   ret
     
-   
 spacebar_value:
     defb $0
     
@@ -283,7 +310,6 @@ spacebar_set:
 end_spacebar_check:
   ret
   
-  
 ;Setup for interrupt handler   
 setup:
     ld hl, $fff4        ;Store 'jp GAME_LOOP' at $fff4
@@ -297,16 +323,16 @@ setup:
     ld (hl), $18        ;Store '$18' aka 'jr'
     ld a, $39           ;Load '$39' in I to get '$ffff' from $3900 to $39ff
     ld i, a             ;Load a into I
-    
     im 2
     ei
     ret  
 
-  
-
-  
 ;Counter for frame interrupts    
 counter:
+    defb $0
+
+;Counter for how often to update the score
+update_score_counter:
     defb $0
   
 ;Main game loop, choses what to draw in each frame
@@ -316,6 +342,7 @@ GAME_LOOP:
     ld a, (hl)                  ;Load end game flag
     cp 0                        ;Compare to 0 (0 = game still playing)
     jp nz, frame_end
+    
     ld hl, counter              ;Load counter location for frames
     ld a, (hl)                  ;Load counter
     cp $0                       ;Compare counter to zero 
@@ -334,11 +361,156 @@ reset_counter:
     ld (hl), $0                 ;Reset counter
 frame_end:
     call check_spacebar
+    ld hl, update_score_counter
+    inc (hl)
+    ld a, (hl)
+    cp 5
+    call z, update_score        ;Update the score every five frames
     call beep
     ei                          ;Enable interrupts
     ret
-   
-  
+
+;Update the current user score
+update_score:
+  ld hl, end_game_flag
+  ld a, $ff
+  xor (hl)
+  jp z, update_score_end       ;if the game isn't going for some reason, don't update the score
+  ld hl, current_score_0
+  ld a, (hl)
+  cp $9
+  jp z, update_score_1     ;if digit 0 is 9, move forward to digit 1
+  inc (hl)                 ;ff digit 0 is not 9, increment it and end
+  jp update_score_end
+update_score_1:
+  ld (hl), 0               ;set digit 0 to 0
+  ld hl, current_score_1_redraw
+  inc (hl)                 ;mark digit 1 for redraw
+  ld hl, current_score_1
+  ld a, (hl)
+  cp 9
+  jp z, update_score_2     ;if digit 1 is 9, move forward to digit 2
+  inc (hl)                 ;if digit 1 is not 9, increment it and end
+  jp update_score_end
+update_score_2:
+  ld (hl), 0               ;continue on with digits 2, 3, and 4
+  ld hl, current_score_2_redraw
+  inc (hl)
+  ld hl, current_score_2
+  ld a, (hl)
+  cp 9
+  jp z, update_score_3
+  inc (hl)
+  jp update_score_end
+update_score_3:
+  ld (hl), 0
+  ld hl, current_score_3_redraw
+  inc (hl)
+  ld hl, current_score_3
+  ld a, (hl)
+  cp 9
+  jp z, update_score_4
+  inc (hl)
+  jp update_score_end
+update_score_4:
+  ld (hl), 0
+  ld hl, current_score_4_redraw
+  inc (hl)
+  ld hl, current_score_4
+  ld a, (hl)
+  cp 9
+  jp z, update_score_end
+  inc (hl)
+update_score_end:
+  call draw_score
+  ld hl, update_score_counter   ;reset the counter so we update again in 5 frames
+  ld (hl), 0
+  ret
+
+;draw the current users score
+draw_score:
+  ld hl, current_score_4_redraw
+  ld a, (hl)
+  cp 1
+  jp nz, draw_score_3         ;if digit 4 is not marked for redrawing, check digit 3
+  dec (hl)                    ;if digit 4 is marked for redrawing, reset the flag and redraw it
+  ld b, 175
+  ld c, 222
+  ld d, $3d                   ;$3d is the MSB of the character address
+  ld hl, current_score_4
+  ld a, (hl)                  ;a = value of digit 4
+  rla             
+  rla
+  rla                         ;a = (value of digit 4)  * 8
+  add $80                     ;a = (value of digit 4) * 8 + $80
+  ld e, a                     ;e is our LSB of the character address
+  call draw_char              
+draw_score_3:
+  ld hl, current_score_3_redraw  ;continue on with digits 2, 1, and 0
+  ld a, (hl)
+  cp 1
+  jp nz, draw_score_2
+  dec (hl)
+  ld b, 175
+  ld c, 230
+  ld d, $3d
+  ld hl, current_score_3
+  ld a, (hl)
+  rlca
+  rlca
+  rlca
+  add $80
+  ld e, a
+  call draw_char
+draw_score_2:
+  ld hl, current_score_2_redraw
+  ld a, (hl)
+  cp 1
+  jp nz, draw_score_1
+  dec (hl)
+  ld b, 175
+  ld c, 238
+  ld d, $3d
+  ld hl, current_score_2
+  ld a, (hl)
+  rlca
+  rlca
+  rlca
+  add $80
+  ld e, a
+  call draw_char
+draw_score_1:
+  ld hl, current_score_1_redraw
+  ld a, (hl)
+  cp 1
+  jp nz, draw_score_0
+  dec (hl)
+  ld b, 175
+  ld c, 246
+  ld d, $3d
+  ld hl, current_score_1
+  ld a, (hl)
+  rlca
+  rlca
+  rlca
+  add $80
+  ld e, a
+  call draw_char
+draw_score_0:
+  ld b, 175
+  ld c, 254
+  ld d, $3d
+  ld hl, current_score_0
+  ld a, (hl)
+  rlca
+  rlca
+  rlca
+  add $80
+  ld e, a
+  call draw_char
+draw_score_end:
+  ret
+
 beep_value:
     defb $0
   
@@ -354,7 +526,6 @@ beep_end:
   ld hl, beep_value
   ld (hl), $0
   ret
-   
    
 hold:
     inc a
@@ -374,9 +545,9 @@ long_hold:
     call hold
     call hold
     ret
-    
  
 GAME_END:
+    di
     ld hl, previous_walking
     ld (hl), 0
     ld hl, 7000
@@ -387,9 +558,11 @@ GAME_END:
     ld de, 3
     call $3b5  ;Play a sharp tone to signify that the game has ended
     im 1
+    call draw_highscore             ;draw the highscore
+    call pause_loop_spacebar        ;wait for the player to hit the spacebar before leaving the gameover screen
+    call set_pixels_white           ;erase the screen
+    call draw_highscore             ;redraw the highscore after erasing the screen
     ei
-    call pause_loop_spacebar
-    call set_pixels_white
     ld hl, end_game_flag
     ld (hl), 0
     ld hl, cact_count
@@ -400,17 +573,206 @@ GAME_END:
     ld (hl), $01
     inc hl
     ld (hl), $18
-    call draw_no_internet
-    call draw_sprites_init
-    call draw_land
-    call draw_land0
-    call long_hold
-    call pause_loop_spacebar
-    call setup
-    call reset_stack_pointer
-    jp start_loop
+    jp start
 
-   
+current_score_0:
+   defb $00
+
+current_score_1:
+   defb $00
+
+current_score_2:
+   defb $00
+
+current_score_3:
+   defb $00
+
+current_score_4:
+   defb $00
+
+current_score_1_redraw:
+   defb $00
+
+current_score_2_redraw:
+   defb $00
+
+current_score_3_redraw:
+   defb $00
+
+current_score_4_redraw:
+   defb $00
+
+highscore_0:
+   defb $00
+
+highscore_1:
+   defb $00
+
+highscore_2:
+   defb $00
+
+highscore_3:
+   defb $00
+
+highscore_4:
+   defb $00
+
+;redraw the current score, but only the digits which have changed
+draw_highscore:
+    ld hl, current_score_4
+    ld a, (hl)
+    ld hl, highscore_4
+    sub (hl)
+    jp c, draw_highscore_draw   ;if highscore[4] > current_score[4], draw the original high score immediately
+    ld hl, highscore_4
+    ld a, (hl)
+    ld hl, current_score_4
+    sub (hl)                     
+    jp c, save_new_highscore     ;if current_score[4] > highscore[4], save the current score as the new highscore
+                                 ;if neight of the above conditions happened, continue on to digit 3
+    ld hl, current_score_3         
+    ld a, (hl)                   ;repeat the above logic for digits 3, 2, 1, and 0
+    ld hl, highscore_3
+    sub (hl)
+    jp c, draw_highscore_draw   
+    ld hl, highscore_3
+    ld a, (hl)
+    ld hl, current_score_3
+    sub (hl)
+    jp c, save_new_highscore
+
+    ld hl, current_score_2
+    ld a, (hl)
+    ld hl, highscore_2
+    sub (hl)
+    jp c, draw_highscore_draw   
+    ld hl, highscore_2
+    ld a, (hl)
+    ld hl, current_score_2
+    sub (hl)
+    jp c, save_new_highscore
+
+    ld hl, current_score_1
+    ld a, (hl)
+    ld hl, highscore_1
+    sub (hl)
+    jp c, draw_highscore_draw   
+    ld hl, highscore_1     
+    ld a, (hl)
+    ld hl, current_score_1 
+    sub (hl)
+    jp c, save_new_highscore
+    
+    ld hl, current_score_0
+    ld a, (hl)
+    ld hl, highscore_0
+    sub (hl)
+    jp c, draw_highscore_draw
+    ld hl, highscore_0    
+    ld a, (hl)
+    ld hl, current_score_0  
+    sub (hl)
+    jp c, save_new_highscore
+
+    jp draw_highscore_draw  ;if nothing has been trigger yet, just redraw the old highscore (most likely 0 and 0)
+
+;Save the current users score as the new high score
+save_new_highscore:
+    ld hl, current_score_4
+    ld a, (hl)
+    ld hl, highscore_4
+    ld (hl), a        ;Save the current_score[4] into high_score[4] and continue for digits 3, 2, 1, and 0
+    ld hl, current_score_3
+    ld a, (hl)
+    ld hl, highscore_3
+    ld (hl), a
+    ld hl, current_score_2
+    ld a, (hl)
+    ld hl, highscore_2
+    ld (hl), a
+    ld hl, current_score_1
+    ld a, (hl)
+    ld hl, highscore_1
+    ld (hl), a
+    ld hl, current_score_0
+    ld a, (hl)
+    ld hl, highscore_0
+    ld (hl), a
+
+;Draw the current highscore, every digit is drawn
+draw_highscore_draw:
+    ld b, 175
+    ld c, 150
+    ld de, $3e40
+    call draw_char  ;H
+    ld de, $3e48
+    call draw_char  ;I
+    ld a, c
+    add 8           ;_
+    ld c, a
+
+    ld b, 175
+    ld c, 174
+    ld d, $3d
+    ld hl, highscore_4
+    ld a, (hl)
+    rla
+    rla
+    rla
+    add $80
+    ld e, a
+    call draw_char   ;Draw the highscore digit 4
+    
+    ld b, 175
+    ld c, 182
+    ld d, $3d
+    ld hl, highscore_3
+    ld a, (hl)
+    rlca
+    rlca
+    rlca
+    add $80
+    ld e, a
+    call draw_char   ;Draw the highscore digit 3
+    
+    ld b, 175
+    ld c, 190
+    ld d, $3d
+    ld hl, highscore_2
+    ld a, (hl)
+    rlca
+    rlca
+    rlca
+    add $80
+    ld e, a
+    call draw_char     ;Draw the highscore digit 2
+    
+    ld b, 175
+    ld c, 198
+    ld d, $3d
+    ld hl, highscore_1
+    ld a, (hl)
+    rlca
+    rlca
+    rlca
+    add $80
+    ld e, a
+    call draw_char     ;Draw the highscore digit 1
+    
+    ld b, 175
+    ld c, 206
+    ld d, $3d
+    ld hl, highscore_0
+    ld a, (hl)
+    rlca
+    rlca
+    rlca
+    add $80
+    ld e, a
+    call draw_char      ;Draw the highscore digit 0
+draw_highscore_end:
+    ret
+
 set_pixels_white:
   ld hl, $4000
   ld de, $4000
@@ -420,24 +782,14 @@ set_pixels_white:
   ldir
   ret   
    
-
-
-   
-   
 draw_cact_init:
     
-   
-   
-
 ;Counter of cactus position
 sprite_currently_drawn:
     defb 0
 
-
 rand_sprite:
     defb 0
-
-
 
 cact_count:
     defb 0
@@ -801,9 +1153,6 @@ set_end_game_flag:
   pop hl
   jp done_setting
 
-
-  
-
 end_game_flag:
   defb $00
 
@@ -846,7 +1195,6 @@ delete_row_loop:
   jp nz, delete_outer_loop
   pop bc
   ret
-
 
 draw_bitmap_dino:
   push bc
