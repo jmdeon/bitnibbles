@@ -72,6 +72,8 @@ draw_sprites_init:
   ld c, 232
   ld hl, cact_big_single_1
   call draw_bitmap
+  ld hl, rand_sprite
+  ld (hl), 0
   ret
     
 ;Draw the no internet string at the bottom of the screen
@@ -784,49 +786,113 @@ set_pixels_white:
     
 
 cact_count:
-    defb 0
+  defb 0
+    
+rand_sprite:
+  defb 0
   
 ;Handle drawing cactus
 draw_cactus:
-    
 
+  ld hl, rand_sprite
+  ld a, (hl)
+  cp 0
+  jp z, draw_big
+  ld a, (hl)
+  cp 1
+  jp z, draw_small
+
+draw_big:
   ld hl, cact_count       ;Load cactus position
   ld a, (hl)              ;Load cactus position
   cp 0                    ;Check if first position
-  jp z, first_cact          ;If so, draw cactus 1
+  jp z, first_cact_big          ;If so, draw cactus 1
   ld hl, cact_count       ;Load cactus position
   ld a, (hl)              ;Load cactus position
   cp 1                    ;Check if second position
-  jp z, second_cact          ;If so, draw cactus 2
+  jp z, second_cact_big          ;If so, draw cactus 2
+  
+draw_small:
+  ld hl, cact_count       ;Load cactus position
+  ld a, (hl)              ;Load cactus position
+  cp 0                    ;Check if first position
+  jp z, first_cact_small          ;If so, draw cactus 1
+  ld hl, cact_count       ;Load cactus position
+  ld a, (hl)              ;Load cactus position
+  cp 1                    ;Check if second position
+  jp z, second_cact_small          ;If so, draw cactus 2
     
-first_cact:
+first_cact_big:
   ld hl, cact_big_single_1
   call delete_cact
   ld hl, cact_big_single_2
   call draw_cact
   jp draw_cact_end
  
-second_cact:
+second_cact_big:
   
   ld hl, cact_big_single_2
   call delete_cact
   call sub_pos
   ld hl, cact_over_flag
+  ld a, (hl)
   cp 1
   jp z, new_cact
   ld hl, cact_big_single_1
   call draw_cact
   jp draw_cact_end
   
+  
+first_cact_small:
+  ld hl, cact_small_double_1
+  call delete_cact
+  ld hl, cact_small_double_2
+  call draw_cact
+  jp draw_cact_end
+ 
+second_cact_small:
+  
+  ld hl, cact_small_double_2
+  call delete_cact
+  call sub_pos
+  ld hl, cact_over_flag
+  ld a, (hl)
+  cp 1
+  jp z, new_cact
+  ld hl, cact_small_double_1
+  call draw_cact
+  jp draw_cact_end
+  
+  
 new_cact:
+  call random_x
+  cp 0
+  jp z, new_small
+  ld a, (hl)
+  cp 1
+  jp z, new_big
+  
+new_big:
   ld hl, cact_big_single_1
   call draw_cact
+  ld hl, rand_sprite
+  ld (hl), 0
+  jp new_end
+  
+new_small:
+  ld hl, cact_small_double_1
+  call draw_cact
+  ld hl, rand_sprite
+  ld (hl), 1
+  jp new_end
+  
+  
+new_end:
   ld hl, cact_over_flag
   ld (hl), 0
  
     
 draw_cact_end:
-
     
   ;Cactus counter reset logic
   ld hl, cact_count       ;Load cactus counter
@@ -841,6 +907,20 @@ cact_fin:
   call draw_land
   ret
     
+;;returns 
+random_x:
+  ld hl, random_val
+  inc (hl)
+  ld a, (hl)
+  and $08           ;change this to $18 for rand 0-3
+  rrca
+  rrca
+  rrca
+  ret
+
+random_val:
+  defb 100    
+
     
 cact_over_flag:
   defb 0
@@ -1660,21 +1740,6 @@ scroll_loop1: ;d is holding last bytes' nibble
   jp nz, scroll_loop1
 
   ret
-
-
-;;returns 
-random_x:
-  ld hl, random_val
-  inc (hl)
-  ld a, (hl)
-  and $08           ;change this to $18 for rand 0-3
-  rrca
-  rrca
-  rrca
-  ret
-
-random_val:
-  defb 0
 
 
 
