@@ -337,7 +337,7 @@ beep:
   ld a, (hl)
   cp 0
   jp z, beep_end
-  ld hl, 497
+  ld hl, 820
   ld de, 20
   call $3b5               ;Play a tone every time the player jumps
 beep_end:
@@ -1183,67 +1183,67 @@ trex_right_up:
 
 cact2_1:
         ;; ROW 1
-        defb $00, $06, $00
-        defb $00, $0f, $00
-        defb $00, $0f, $00
-        defb $00, $0f, $00
-        defb $00, $0f, $00
-        defb $01, $8f, $10
-        defb $03, $cf, $38
-        defb $03, $cf, $38
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
         
         ;; ROW 2
-        defb $03, $cf, $38
-        defb $03, $cf, $38
-        defb $03, $cf, $38
-        defb $03, $cf, $38
-        defb $03, $cf, $38
-        defb $03, $cf, $38
-        defb $03, $ff, $f8
-        defb $01, $ff, $f0
+        defb $00, $80, $10
+        defb $01, $c0, $38
+        defb $01, $c0, $b8
+        defb $01, $c1, $b8
+        defb $05, $d1, $ba
+        defb $0d, $d9, $bb
+        defb $0d, $d9, $bb
+        defb $0d, $d9, $bb
         
         ;; ROW 3
-        defb $00, $7f, $c0
-        defb $00, $0f, $00
-        defb $00, $0f, $00
-        defb $00, $0f, $00
-        defb $00, $0f, $00
-        defb $00, $0f, $00
-        defb $00, $0f, $00
-        defb $00, $0f, $00
+        defb $0d, $d9, $fb
+        defb $0d, $d9, $fb
+        defb $0f, $f8, $3f
+        defb $07, $f0, $3e
+        defb $01, $c0, $38
+        defb $01, $c0, $38
+        defb $01, $c0, $38
+        defb $01, $c0, $38
 
 
 
 ;; 3rd part of animation
 cact2_2:
         ;; ROW 1
-        defb $00, $60, $00
-        defb $00, $f0, $00
-        defb $00, $f0, $00
-        defb $00, $f0, $00
-        defb $00, $f0, $00
-        defb $18, $f1, $00
-        defb $3c, $f3, $80
-        defb $3c, $f3, $80
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
+        defb $00, $00, $00
         
         ;; ROW 2
-        defb $3c, $f3, $80
-        defb $3c, $f3, $80
-        defb $3c, $f3, $80
-        defb $3c, $f3, $80
-        defb $3c, $f3, $80
-        defb $3c, $f3, $80
-        defb $3f, $ff, $80
-        defb $1f, $ff, $00
+        defb $08, $01, $00
+        defb $1c, $03, $80
+        defb $1c, $0b, $80
+        defb $1c, $1b, $80
+        defb $5d, $1b, $a0
+        defb $dd, $9b, $b0
+        defb $dd, $9b, $b0
+        defb $dd, $9b, $b0
         
         ;; ROW 3
-        defb $07, $fc, $00
-        defb $00, $f0, $00
-        defb $00, $f0, $00
-        defb $00, $f0, $00
-        defb $00, $f0, $00
-        defb $00, $f0, $00
-        defb $00, $f0, $00
-        defb $00, $f0, $00
+        defb $dd, $9f, $b0
+        defb $dd, $8f, $b0
+        defb $ff, $83, $f0
+        defb $7f, $f0, $00
+        defb $1c, $03, $80
+        defb $1c, $03, $80
+        defb $1c, $03, $80
+        defb $1c, $03, $80
         
         
