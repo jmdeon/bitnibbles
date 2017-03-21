@@ -628,6 +628,7 @@ GAME_END:
     call draw_highscore             ;draw the highscore
     call display_game_over
     call pause_loop_spacebar        ;wait for the player to hit the spacebar before leaving the gameover screen
+    call set_all_white
     call set_pixels_white           ;erase the screen
     call draw_highscore             ;redraw the highscore after erasing the screen
     ei
