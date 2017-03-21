@@ -36,7 +36,7 @@ draw_dino_init:
   ld (hl), 0
   ld b, 60
   ld c, 232
-  ld hl, cact2_2
+  ld hl, cact_small_double_2
   call draw_bitmap
   ret
     
@@ -455,7 +455,7 @@ cact_1:
   ld b, 60              ;Load Y Position of cactus 2 into b
   ld hl, pos            ;Load X position location
   ld c, (hl)            ;Load X position into c
-  ld hl, cact2_2        ;Load cactus 2 bitmap
+  ld hl, cact_small_double_2        ;Load cactus 2 bitmap
   call delete_bitmap    ;Delete cactus 2
   call scroll_land_routine
   
@@ -475,7 +475,7 @@ pos_end:
   ld hl, pos            ;Load X position location
   ld c, (hl)            ;Load X position into c                
   ld b, 60              ;Load Y position into b
-  ld hl, cact2_1        ;Load cactus 1 bitmap
+  ld hl, cact_small_double_2        ;Load cactus 1 bitmap
   call draw_bitmap      ;Draw cactus 1 bitmap
   ret
   
@@ -493,7 +493,7 @@ cact_2:
   ld b, 60              ;Load Y position into b
   ld hl, pos            ;Load X position location
   ld c, (hl)            ;Load X position into c
-  ld hl, cact2_2        ;Load Cactus 2 bitmap
+  ld hl, cact_small_double_2        ;Load Cactus 2 bitmap
   call draw_bitmap      ;Draw Cactus 2 bitmap
   ret
   
@@ -1181,7 +1181,7 @@ trex_right_up:
         defb $04, $00, $00
         defb $06, $00, $00
 
-cact2_1:
+cact_small_double_1:
         ;; ROW 1
         defb $00, $00, $00
         defb $00, $00, $00
@@ -1213,9 +1213,7 @@ cact2_1:
         defb $01, $c0, $38
 
 
-
-;; 3rd part of animation
-cact2_2:
+cact_small_double_2:
         ;; ROW 1
         defb $00, $00, $00
         defb $00, $00, $00
@@ -1246,4 +1244,64 @@ cact2_2:
         defb $1c, $03, $80
         defb $1c, $03, $80
         
+cact_big_single_1:
+        ;; ROW 1
+        defb $00, $06, $00
+        defb $00, $0f, $00
+        defb $00, $0f, $00
+        defb $00, $0f, $00
+        defb $00, $0f, $00
+        defb $01, $8f, $10
+        defb $03, $cf, $38
+        defb $03, $cf, $38
         
+        ;; ROW 2
+        defb $03, $cf, $38
+        defb $03, $cf, $38
+        defb $03, $cf, $38
+        defb $03, $cf, $38
+        defb $03, $cf, $38
+        defb $03, $cf, $38
+        defb $03, $ff, $f8
+        defb $01, $ff, $f0
+        
+        ;; ROW 3
+        defb $00, $7f, $c0
+        defb $00, $0f, $00
+        defb $00, $0f, $00
+        defb $00, $0f, $00
+        defb $00, $0f, $00
+        defb $00, $0f, $00
+        defb $00, $0f, $00
+        defb $00, $0f, $00
+        
+cact_big_single_2:
+        ;; ROW 1
+        defb $00, $60, $00
+        defb $00, $f0, $00
+        defb $00, $f0, $00
+        defb $00, $f0, $00
+        defb $00, $f0, $00
+        defb $18, $f1, $00
+        defb $3c, $f3, $80
+        defb $3c, $f3, $80
+        
+        ;; ROW 2
+        defb $3c, $f3, $80
+        defb $3c, $f3, $80
+        defb $3c, $f3, $80
+        defb $3c, $f3, $80
+        defb $3c, $f3, $80
+        defb $3c, $f3, $80
+        defb $3f, $ff, $80
+        defb $1f, $ff, $00
+        
+        ;; ROW 3
+        defb $07, $fc, $00
+        defb $00, $f0, $00
+        defb $00, $f0, $00
+        defb $00, $f0, $00
+        defb $00, $f0, $00
+        defb $00, $f0, $00
+        defb $00, $f0, $00
+        defb $00, $f0, $00
