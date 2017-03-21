@@ -552,7 +552,7 @@ beep:
   cp 2
   jp z, beep_score
   ld hl, 810
-  ld de, 20
+  ld de, 10
   call $3b5               ;Play a tone every time the player jumps
   jp beep_end
 beep_score:
