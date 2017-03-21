@@ -62,7 +62,7 @@ set_all_white:
 set_night_mode:
   ld hl, $5800 ;;start of attr address
   ld de, $5800 ;;start of attr address
-  ld (hl), $7 ;;grey background, black foreground
+  ld (hl), $7 ;;black background, grey foreground
   inc e        ;;move to the next attribute byte
   ld bc, $2ff  ;;32 x 24 attr addresses - 1
   ldir
@@ -71,7 +71,7 @@ set_night_mode:
 set_party_mode:
   ld hl, $5800 ;;start of attr address
   ld de, $5800 ;;start of attr address
-  ld (hl), $38 ;;grey background, black foreground
+  ld (hl), $99 ;;purple and blue flashing
   inc e        ;;move to the next attribute byte
   ld bc, $2ff  ;;32 x 24 attr addresses - 1
   ldir
@@ -462,6 +462,9 @@ update_score_3:
   cp 9
   jp z, update_score_4
   inc (hl)
+  ld a, (hl)
+  cp 1
+  call z, set_party_mode
   jp update_score_end
 update_score_4:
   ld (hl), 0
