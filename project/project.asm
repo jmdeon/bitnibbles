@@ -1196,6 +1196,201 @@ delete_row_loop:
   pop bc
   ret
 
+draw_bitmap4:
+  push bc
+  exx
+  pop bc   ;bc' has x,y
+  exx
+
+  ld b, 24
+  push bc
+outer_loop4:
+  
+  exx
+  push bc  ;save current y coord
+  call $22aa   ;hl' holds pixel-byte addr of c,b
+
+  ld b, 4
+row_loop4:
+  exx
+  ld d, (hl)
+  inc hl ;inc bitmap_addr
+  push de
+  exx
+  pop de
+
+  pop af  ;a has y-coord
+  push af ; x,y still saved on stack
+  sub 41
+  jp c, done_setting
+  
+collision_detection4:
+  ld a, d      ;put trex byte into accumulator
+  and (hl)     ;collision detection
+  jp nz, set_end_game_flag
+done_setting4: 
+
+  ld a,d
+  or (hl)
+  ld (hl), a ;draw byte
+  inc hl  ;inc draw location
+
+  djnz row_loop4;loop until all 3 bytes of row complete
+  pop bc   ;get y-coord
+  dec b    ;dec y-coord
+  exx
+  pop bc
+  dec b
+  push bc
+
+  jp nz, outer_loop4
+  pop bc
+
+  
+  ld hl, end_game_flag
+  ld a, $ff
+  xor (hl)
+  jp z, GAME_END
+  ret
+
+delete_bitmap4:
+  push bc
+  exx
+  pop bc   ;bc' has x,y
+  exx
+
+  ld b, 24
+  push bc
+delete_outer_loop4:
+
+  exx
+  push bc  ;save current y coord
+  call $22aa   ;hl' holds pixel-byte addr of c,b
+
+  ld b, 4
+delete_row_loop4:
+  exx
+  ld d, (hl)
+  inc hl ;inc bitmap_addr
+  push de
+  exx
+  pop de
+
+  ld a,d
+  xor (hl)
+  ld (hl), a ;draw byte
+  inc hl  ;inc draw location
+
+  djnz delete_row_loop4;loop until all 3 bytes of row complete
+  pop bc   ;get y-coord
+  dec b    ;dec y-coord
+  exx
+  pop bc
+  dec b
+  push bc
+
+  jp nz, delete_outer_loop4
+  pop bc
+  ret
+
+draw_bitmap5:
+  push bc
+  exx
+  pop bc   ;bc' has x,y
+  exx
+
+  ld b, 24
+  push bc
+outer_loop5:
+  
+  exx
+  push bc  ;save current y coord
+  call $22aa   ;hl' holds pixel-byte addr of c,b
+
+  ld b, 5
+row_loop5:
+  exx
+  ld d, (hl)
+  inc hl ;inc bitmap_addr
+  push de
+  exx
+  pop de
+
+  pop af  ;a has y-coord
+  push af ; x,y still saved on stack
+  sub 41
+  jp c, done_setting
+  
+collision_detection5:
+  ld a, d      ;put trex byte into accumulator
+  and (hl)     ;collision detection
+  jp nz, set_end_game_flag
+done_setting5: 
+
+  ld a,d
+  or (hl)
+  ld (hl), a ;draw byte
+  inc hl  ;inc draw location
+
+  djnz row_loop5;loop until all 3 bytes of row complete
+  pop bc   ;get y-coord
+  dec b    ;dec y-coord
+  exx
+  pop bc
+  dec b
+  push bc
+
+  jp nz, outer_loop5
+  pop bc
+
+  
+  ld hl, end_game_flag
+  ld a, $ff
+  xor (hl)
+  jp z, GAME_END
+  ret
+
+delete_bitmap5:
+  push bc
+  exx
+  pop bc   ;bc' has x,y
+  exx
+
+  ld b, 24
+  push bc
+delete_outer_loop5:
+
+  exx
+  push bc  ;save current y coord
+  call $22aa   ;hl' holds pixel-byte addr of c,b
+
+  ld b, 5
+delete_row_loop5:
+  exx
+  ld d, (hl)
+  inc hl ;inc bitmap_addr
+  push de
+  exx
+  pop de
+
+  ld a,d
+  xor (hl)
+  ld (hl), a ;draw byte
+  inc hl  ;inc draw location
+
+  djnz delete_row_loop5;loop until all 3 bytes of row complete
+  pop bc   ;get y-coord
+  dec b    ;dec y-coord
+  exx
+  pop bc
+  dec b
+  push bc
+
+  jp nz, delete_outer_loop5
+  pop bc
+  ret
+
+
 draw_bitmap_dino:
   push bc
   exx
