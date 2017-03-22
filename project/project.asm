@@ -1842,7 +1842,7 @@ cact_small_double_1:
         
         ;; ROW 3
         defb $0d, $d9, $fb
-        defb $0d, $d9, $fb
+        defb $0d, $d8, $fb
         defb $0f, $f8, $3f
         defb $07, $f0, $3e
         defb $01, $c0, $38
@@ -1876,7 +1876,7 @@ cact_small_double_2:
         defb $dd, $9f, $b0
         defb $dd, $8f, $b0
         defb $ff, $83, $f0
-        defb $7f, $03, $80
+        defb $7f, $03, $e0
         defb $1c, $03, $80
         defb $1c, $03, $80
         defb $1c, $03, $80
